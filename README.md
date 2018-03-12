@@ -79,7 +79,7 @@ specifically for priority inheritance aware condition variables. The calls wrap
 a pthread_mutex_t internally, but it is not exposed to the caller to examine,
 manipulate, or pass directly.
 
-int pi_mutex_init(pi_mutex_t \*pim, uint32_t flags, bool pshared)
+int pi_mutex_init(pi_mutex_t \*pi_mutex, uint32_t flags, bool pshared)
 	Wrapper to pthread_mutex_init and pthread_mutexattr_setprotocol,
 	ensuring PTHREAD_PRIO_INHERIT is set, and allows for the specification
 	of process private or process shared.
@@ -96,16 +96,16 @@ int pi_mutex_init(pi_mutex_t \*pim, uint32_t flags, bool pshared)
 
 	Returns 0 on success, otherwise an error number is returned.
 
-int pi_mutex_destroy(pi_mutex_t \*pim)
+int pi_mutex_destroy(pi_mutex_t \*pi_mutex)
 	Simple wrapper to pthread_mutex_destroy.
 
-int pi_mutex_lock(pi_mutex_t \*pim)
+int pi_mutex_lock(pi_mutex_t \*pi_mutex)
 	Simple wrapper to pthread_mutex_lock.
 
-int pi_mutex_trylock(pi_mutex_t \*pim)
+int pi_mutex_trylock(pi_mutex_t \*pi_mutex)
 	Simple wrapper to pthread_mutex_trylock.
 
-int pi_mutex_unlock(pi_mutex_t \*pim)
+int pi_mutex_unlock(pi_mutex_t \*pi_mutex)
 	Simple wrapper to pthread_mutex_unlock.
 
 PI Condition
@@ -114,17 +114,17 @@ PI Condition
 The PI Condition API represents a new implementation of a Non-POSIX PI aware
 condition variable.
 
-int pi_cond_init(pi_condvar_t \*pic, pi_mutex_t \*pim, bool pshared)
+int pi_cond_init(pi_condvar_t \*pi_cond, pi_mutex_t \*pi_mutex, bool pshared)
 
-int pi_cond_destroy(pi_condvar_t \*pic)
+int pi_cond_destroy(pi_condvar_t \*pi_cond)
 
-int pi_cond_wait(pi_condvar_t \*pic)
+int pi_cond_wait(pi_condvar_t \*pi_cond)
 
-int pi_cond_timedwait(pi_condvar_t \*pic, const struct timespec \*restrict abstime)
+int pi_cond_timedwait(pi_condvar_t \*pi_cond, const struct timespec \*restrict abstime)
 
-int pi_cond_signal(pi_condvar_t \*pic)
+int pi_cond_signal(pi_condvar_t \*pi_cond)
 
-int pi_cond_broadcast(pi_condvar_t \*pic)
+int pi_cond_broadcast(pi_condvar_t \*pi_cond)
 
 Initializers
 ------------
