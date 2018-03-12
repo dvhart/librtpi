@@ -79,9 +79,20 @@ specifically for priority inheritance aware condition variables. The calls wrap
 a pthread_mutex_t internally, but it is not exposed to the caller to examine,
 manipulate, or pass directly.
 
-int pi_mutex_init(pi_mutex_t \*pim)
+int pi_mutex_init(pi_mutex_t \*pim, uint32_t flags, bool pshared)
 	Wrapper to pthread_mutex_init and pthread_mutexattr_setprotocol,
-	ensuring PTHREAD_PRIO_INHERIT is set.
+	ensuring PTHREAD_PRIO_INHERIT is set, and allows for the specification
+	of process private or process shared.
+
+	The following attributes are not supported:
+	type:
+	- PTHREAD_MUTEX_RECURSIVE
+	- PTHREAD_MUTEX_ERRORCHECK
+	robust:
+	- PTHREAD_MUTEX_ROBUST
+	protocol:
+	- PTHREAD_PRIO_NONE
+	- PTHREAD_PRIO_PROTECT
 
 	Returns 0 on success, otherwise an error number is returned.
 
@@ -103,7 +114,7 @@ PI Condition
 The PI Condition API represents a new implementation of a Non-POSIX PI aware
 condition variable.
 
-int pi_cond_init(pi_condvar_t \*pic, pi_mutex_t \*pim)
+int pi_cond_init(pi_condvar_t \*pic, pi_mutex_t \*pim, bool pshared)
 
 int pi_cond_destroy(pi_condvar_t \*pic)
 
