@@ -5,4 +5,4 @@ librtpi_a_SOURCES = rtpi.h pi_mutex.c pi_cond.c
 
 bin_PROGRAMS = test
 test_SOURCES = test.c rtpi.h
-test_LDADD = librtpi.a
+test_LDADD = librtpi.a -lpthread
