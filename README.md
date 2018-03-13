@@ -39,20 +39,21 @@ industry.
 
 # C Specification
 ## Source Files
-* librtpi.h
-* librtpi.c
+* rtpi.h
+* pi_mutex.c
+* pi_cond.c
 
 ## Packaged Collateral
-* librtpi.h
-* librtpi.so
+* rtpi.h
 * librtpi.a
+* librtpi.so
 
 ## Types
 ### pi_mutex_t
 Wrapper to pthread_mutex_t guranteed to be initialized using a
 mutexattr with the PTHREAD_PRIO_INHERIT protocal set.
 
-### pi_condvar_t
+### pi_cond_t
 New primitive modeled after the POSIX pthread_cond_t, with the following
 modifications.
 
@@ -74,7 +75,7 @@ specifically for priority inheritance aware condition variables. The calls wrap
 a pthread_mutex_t internally, but it is not exposed to the caller to examine,
 manipulate, or pass directly.
 
-#### int pi_mutex_init(pi_mutex_t \*pi_mutex, uint32_t flags)
+#### int pi_mutex_init(pi_mutex_t \*mutex, uint32_t flags)
 Wrapper to pthread_mutex_init and pthread_mutexattr_setprotocol,
 ensuring PTHREAD_PRIO_INHERIT is set, and allows for the specification
 of process private or process shared.
@@ -97,36 +98,36 @@ The following attributes are not supported:
 
 Returns 0 on success, otherwise an error number is returned.
 
-#### int pi_mutex_destroy(pi_mutex_t \*pi_mutex)
+#### int pi_mutex_destroy(pi_mutex_t \*mutex)
 Simple wrapper to pthread_mutex_destroy.
 
-#### int pi_mutex_lock(pi_mutex_t \*pi_mutex)
+#### int pi_mutex_lock(pi_mutex_t \*mutex)
 Simple wrapper to pthread_mutex_lock.
 
-#### int pi_mutex_trylock(pi_mutex_t \*pi_mutex)
+#### int pi_mutex_trylock(pi_mutex_t \*mutex)
 Simple wrapper to pthread_mutex_trylock.
 
-#### int pi_mutex_unlock(pi_mutex_t \*pi_mutex)
+#### int pi_mutex_unlock(pi_mutex_t \*mutex)
 Simple wrapper to pthread_mutex_unlock.
 
 ### PI Condition
 The PI Condition API represents a new implementation of a Non-POSIX PI aware
 condition variable.
 
-#### int pi_cond_init(pi_condvar_t \*pi_cond, pi_mutex_t \*pi_mutex, uint32_t flags)
+#### int pi_cond_init(pi_cond_t \*cond, pi_mutex_t \*mutex, uint32_t flags)
 
 ##### Where flags are:
 * RTPI_COND_PSHARED
 
-#### int pi_cond_destroy(pi_condvar_t \*pi_cond)
+#### int pi_cond_destroy(pi_cond_t \*cond)
 
-#### int pi_cond_wait(pi_condvar_t \*pi_cond)
+#### int pi_cond_wait(pi_cond_t \*cond)
 
-#### int pi_cond_timedwait(pi_condvar_t \*pi_cond, const struct timespec \*restrict abstime)
+#### int pi_cond_timedwait(pi_cond_t \*cond, const struct timespec \*restrict abstime)
 
-#### int pi_cond_signal(pi_condvar_t \*pi_cond)
+#### int pi_cond_signal(pi_cond_t \*cond)
 
-#### int pi_cond_broadcast(pi_condvar_t \*pi_cond)
+#### int pi_cond_broadcast(pi_cond_t \*cond)
 
 ## Initializers
 * PI_MUTEX_INITIALIZER
