@@ -90,7 +90,7 @@ The following attributes are not supported:
 ##### Where flags are:
 * RTPI_MUTEX_PSHARED
 ##### And future flags may include
-* RTPI_MUTEX_ERRORCHECKED
+* RTPI_MUTEX_ERRORCHECK
 * RTPI_MUTEX_ROBUST
 
 Returns 0 on success, otherwise an error number is returned.
@@ -118,19 +118,19 @@ condition variable.
 
 #### int pi_cond_destroy(pi_cond_t \*cond)
 
-#### int pi_cond_wait(pi_cond_t \*cond)
+#### int pi_cond_wait(pi_cond_t \*cond, pi_mutex_t \*mutex)
 
-#### int pi_cond_timedwait(pi_cond_t \*cond, const struct timespec \*restrict abstime)
+#### int pi_cond_timedwait(pi_cond_t \*cond, pi_mutex_t \*mutex, const struct timespec \*restrict abstime)
 
 #### int pi_cond_signal(pi_cond_t \*cond)
 
 #### int pi_cond_broadcast(pi_cond_t \*cond)
 
 ## Initializers
-* PI_MUTEX_INITIALIZER
-
-No PI_COND_INITIALIZER will be provided as a known pi_mutex_t is required at
-init.
+No initializers will be provided as the parallel glibc implementation requires
+the use of attrs to setup the protocol and clock at a minimum. RTPI also
+requires a known mutex to be associated with a condition variable at the time of
+initialization.
 
 # C++ Specification
 WRITEME - after the C Specification is complete
