@@ -15,6 +15,7 @@ typedef struct pi_mutex {
 
 typedef struct pi_cond {
 	pthread_cond_t cond;
+	pi_mutex_t *mutex;
 } pi_cond_t;
 
 /*
@@ -46,9 +47,9 @@ int pi_cond_init(pi_cond_t *cond, pi_mutex_t *mutex, uint32_t flags);
 
 int pi_cond_destroy(pi_cond_t *cond);
 
-int pi_cond_wait(pi_cond_t *cond, pi_mutex_t *mutex);
+int pi_cond_wait(pi_cond_t *cond);
 
-int pi_cond_timedwait(pi_cond_t *cond, pi_mutex_t *mutex, const struct timespec *restrict abstime);
+int pi_cond_timedwait(pi_cond_t *cond, const struct timespec *restrict abstime);
 
 int pi_cond_signal(pi_cond_t *cond);
 

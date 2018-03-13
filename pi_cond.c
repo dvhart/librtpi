@@ -34,12 +34,14 @@ int pi_cond_init(pi_cond_t *cond, struct pi_mutex *mutex, uint32_t flags)
 	if (ret)
 		goto out;
 
+	cond->mutex = mutex;
+
 	/* Force association with the specified mutex */
 	ts.tv_nsec = 1;
 	ret = pi_mutex_lock(mutex);
 	if (ret)
 		goto out;
-	ret = pthread_cond_timedwait(&cond->cond, &mutex->mutex, &ts);
+	ret = pthread_cond_timedwait(&cond->cond, &cond->mutex->mutex, &ts);
 	if (ret == ETIMEDOUT)
 		ret = 0;
 	else if (ret == 0)
@@ -56,17 +58,17 @@ int pi_cond_destroy(pi_cond_t *cond)
 	return ret;
 }
 
-int pi_cond_wait(pi_cond_t *cond, pi_mutex_t *mutex)
+int pi_cond_wait(pi_cond_t *cond)
 {
 	int ret;
-	ret = pthread_cond_wait(&cond->cond, &mutex->mutex);
+	ret = pthread_cond_wait(&cond->cond, &cond->mutex->mutex);
 	return ret;
 }
 
-int pi_cond_timedwait(pi_cond_t *cond, pi_mutex_t *mutex, const struct timespec *restrict abstime)
+int pi_cond_timedwait(pi_cond_t *cond, const struct timespec *restrict abstime)
 {
 	int ret;
-	ret = pthread_cond_timedwait(&cond->cond, &mutex->mutex, abstime);
+	ret = pthread_cond_timedwait(&cond->cond, &cond->mutex->mutex, abstime);
 	return ret;
 }
 

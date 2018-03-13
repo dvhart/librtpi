@@ -118,9 +118,9 @@ condition variable.
 
 #### int pi_cond_destroy(pi_cond_t \*cond)
 
-#### int pi_cond_wait(pi_cond_t \*cond, pi_mutex_t \*mutex)
+#### int pi_cond_wait(pi_cond_t \*cond)
 
-#### int pi_cond_timedwait(pi_cond_t \*cond, pi_mutex_t \*mutex, const struct timespec \*restrict abstime)
+#### int pi_cond_timedwait(pi_cond_t \*cond, const struct timespec \*restrict abstime)
 
 #### int pi_cond_signal(pi_cond_t \*cond)
 
