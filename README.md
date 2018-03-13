@@ -27,6 +27,13 @@ To encourage programming to the API, internal types specific to the
 implementation are opaque types, or private class members in the case of the C++
 bindings (using the "Has a" vs. "Is a" inheritance model).
 
+Build
+=====
+	$ autoreconf --install
+	$ ./configure
+	$ make
+	$ ./test
+
 License
 =======
 The Real-Time Priority Inheritance Library is licensed under the Lesser GNU
