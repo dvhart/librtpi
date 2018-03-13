@@ -60,13 +60,9 @@ modifications.
 1. It must be associated with a pi_mutex_t at initialization time,
 preventing the practice of signaling the condition prior to the
 association of the mutex.
-
-* [ ] TODO: Is this a limitation we want to create? Is there a valid use
-case where one would want to use multiple mutexes with a condition
-variable?
-
 2. All wakeup events will wake the N highest priority waiters
-* [ ] TODO: should we require the associated mutex be held?
+3. The associated mutex must be held when the condition variable is signaled or
+broadcast.
 
 ## Functions
 ### PI Mutex
