@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: LGPL-2.1-only */
+/* Copyright © 2018 VMware, Inc. All Rights Reserved. */
 
 #ifndef _RTPI_H
 #define _RTPI_H

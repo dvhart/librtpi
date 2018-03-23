@@ -31,11 +31,13 @@ bindings (using the "Has a" vs. "Is a" inheritance model).
 	$ make
 	$ ./test
 
-# License
+# License and Copyright
 The Real-Time Priority Inheritance Library is licensed under the Lesser GNU
 Public License. The LGPL was chosen to make it possible to link with libc
 libraries, reuse code from libc, and still be as broadly usable as possible in
 industry.
+
+Copyright © 2018 VMware, Inc. All Rights Reserved.
 
 # C Specification
 ## Source Files
