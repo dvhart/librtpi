@@ -139,3 +139,5 @@ WRITEME - after the C Specification is complete
 
 # References
 1. POSIX pthread API?
+2. [Requeue-PI: Making Glibc Condvars PI-Aware](https://static.lwn.net/images/conf/rtlws11/papers/proc/p10.pdf)
+3. [Bug 11588 - pthread condvars are not priority inheritance aware](https://sourceware.org/bugzilla/show_bug.cgi?id=11588)
