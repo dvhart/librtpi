@@ -7,17 +7,11 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <pthread.h>
+#include <stdlib.h>
 #include <time.h>
 
-/* TODO: Make these opaque types */
-typedef struct pi_mutex {
-	pthread_mutex_t mutex;
-} pi_mutex_t;
-
-typedef struct pi_cond {
-	pthread_cond_t cond;
-	pi_mutex_t *mutex;
-} pi_cond_t;
+typedef struct pi_mutex pi_mutex_t;
+typedef struct pi_cond pi_cond_t;
 
 /*
  * PI Mutex Interface
@@ -26,6 +20,10 @@ typedef struct pi_cond {
 #define RTPI_MUTEX_PSHARED    0x1
 //#define RTPI_MUTEX_ROBUST     0x2
 //#define RTPI_MUTEX_ERRORCHECK 0x4
+
+pi_mutex_t *pi_mutex_alloc(void);
+
+void pi_mutex_free(pi_mutex_t *mutex);
 
 int pi_mutex_init(pi_mutex_t *mutex, uint32_t flags);
 
@@ -43,6 +41,10 @@ int pi_mutex_unlock(pi_mutex_t *mutex);
  */
 
 #define RTPI_COND_PSHARED     0x1
+
+pi_cond_t *pi_cond_alloc(void);
+
+void pi_cond_free(pi_cond_t *cond);
 
 int pi_cond_init(pi_cond_t *cond, pi_mutex_t *mutex, uint32_t flags);
 

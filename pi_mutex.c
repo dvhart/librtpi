@@ -1,7 +1,17 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 // Copyright © 2018 VMware, Inc. All Rights Reserved.
 
-#include "rtpi.h"
+#include "rtpi_internal.h"
+
+pi_mutex_t *pi_mutex_alloc(void)
+{
+	return malloc(sizeof(pi_mutex_t));
+}
+
+void pi_mutex_free(pi_mutex_t *mutex)
+{
+	free(mutex);
+}
 
 int pi_mutex_init(pi_mutex_t *mutex, uint32_t flags)
 {

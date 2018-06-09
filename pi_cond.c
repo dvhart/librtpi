@@ -2,7 +2,7 @@
 // Copyright © 2018 VMware, Inc. All Rights Reserved.
 
 #include <stdio.h>
-#include "rtpi.h"
+#include "rtpi_internal.h"
 
 /*
  * This wrapper for early library validation only.
@@ -10,6 +10,17 @@
  *       Base this on the older version of the condvar, with the patch from
  *       Dinakar and Darren to enable priority fifo wakeup order.
  */
+
+pi_cond_t *pi_cond_alloc(void)
+{
+	return malloc(sizeof(pi_cond_t));
+}
+
+void pi_cond_free(pi_cond_t *cond)
+{
+	free(cond);
+}
+
 int pi_cond_init(pi_cond_t *cond, struct pi_mutex *mutex, uint32_t flags)
 {
 	pthread_condattr_t attr;
