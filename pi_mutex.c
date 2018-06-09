@@ -2,6 +2,9 @@
 // Copyright © 2018 VMware, Inc. All Rights Reserved.
 
 #include "rtpi_internal.h"
+#include "pi_futex.h"
+#include <stdbool.h>
+#include <string.h>
 
 pi_mutex_t *pi_mutex_alloc(void)
 {
@@ -18,53 +21,54 @@ int pi_mutex_init(pi_mutex_t *mutex, uint32_t flags)
 	pthread_mutexattr_t attr;
 	int ret;
 
-	ret = pthread_mutexattr_init(&attr);
-	if (ret)
-		goto out;
-
 	/* All RTPI mutexes are PRIO_INHERIT */
-	ret = pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT);
-	if (ret)
-		goto out;
+	memset(mutex, 0, sizeof(*mutex));
 
-	if (flags && RTPI_MUTEX_PSHARED) {
-		ret = pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
-		if (ret)
-			goto out;
+	/* Check for unknown options */
+	if (flags & ~(RTPI_MUTEX_PSHARED)) {
+		ret = -EINVAL;
+		goto out;
 	}
 
-	ret = pthread_mutex_init(&mutex->mutex, &attr);
-
- out:
+	if (flags & RTPI_MUTEX_PSHARED)
+		mutex->flags = RTPI_MUTEX_PSHARED;
+	ret = 0;
+out:
 	return ret;
 }
 
 int pi_mutex_destroy(pi_mutex_t *mutex)
 {
-	int ret;
-	/* TODO: should we also destroy the mutexattr? */
-	ret = pthread_mutex_destroy(&mutex->mutex);
-	return ret;
+	memset(mutex, 0, sizeof(*mutex));
+	return 0;
 }
 
 int pi_mutex_lock(pi_mutex_t *mutex)
 {
 	int ret;
-	ret = pthread_mutex_lock(&mutex->mutex);
+
+	ret = futex_lock_pi(&mutex->futex);
 	return ret;
 }
 
 int pi_mutex_trylock(pi_mutex_t *mutex)
 {
-	int ret;
-	ret = pthread_mutex_trylock(&mutex->mutex);
-	return ret;
+	pid_t pid;
+	bool ret;
+
+	pid = gettid();
+	ret = __sync_bool_compare_and_swap(&mutex->futex,
+					   0, pid);
+	if (ret == true)
+		return 1;
+	return 0;
 }
 
 int pi_mutex_unlock(pi_mutex_t *mutex)
 {
 	int ret;
-	ret = pthread_mutex_unlock(&mutex->mutex);
+
+	ret = futex_unlock_pi(&mutex->futex);
 	return ret;
 }
 

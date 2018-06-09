@@ -7,7 +7,8 @@
 #include "rtpi.h"
 
 typedef struct pi_mutex {
-	pthread_mutex_t mutex;
+	unsigned int futex;
+	unsigned int flags;
 } pi_mutex_t;
 
 typedef struct pi_cond {
