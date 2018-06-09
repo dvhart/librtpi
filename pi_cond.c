@@ -2,7 +2,10 @@
 // Copyright © 2018 VMware, Inc. All Rights Reserved.
 
 #include <stdio.h>
+#include <string.h>
+#include <limits.h>
 #include "rtpi_internal.h"
+#include "pi_futex.h"
 
 /*
  * This wrapper for early library validation only.
@@ -23,78 +26,77 @@ void pi_cond_free(pi_cond_t *cond)
 
 int pi_cond_init(pi_cond_t *cond, struct pi_mutex *mutex, uint32_t flags)
 {
-	pthread_condattr_t attr;
 	struct timespec ts = { 0, 0 };
 	int ret;
 
-	ret = pthread_condattr_init(&attr);
-	if (ret)
+	if (flags & ~(RTPI_COND_PSHARED)) {
+		ret = -EINVAL;
 		goto out;
-
-	/* All RTPI condvars are CLOCK_MONOTONIC */
-	ret = pthread_condattr_setclock(&attr, CLOCK_MONOTONIC);
-	if (ret)
-		goto out;
-
-	if (flags && RTPI_COND_PSHARED) {
-		ret = pthread_condattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
-		if (ret)
-			goto out;
 	}
 
-	ret = pthread_cond_init(&cond->cond, &attr);
-	if (ret)
+	if (flags & RTPI_COND_PSHARED) {
+		cond->flags = RTPI_COND_PSHARED;
+	}
+
+	/* PSHARED has to match on both. */
+	if ((cond->flags & RTPI_COND_PSHARED) ^ (mutex->flags % RTPI_MUTEX_PSHARED)) {
+		ret = -EINVAL;
 		goto out;
+	}
 
 	cond->mutex = mutex;
 
-	/* Force association with the specified mutex */
-	ts.tv_nsec = 1;
-	ret = pi_mutex_lock(mutex);
-	if (ret)
-		goto out;
-	ret = pthread_cond_timedwait(&cond->cond, &cond->mutex->mutex, &ts);
-	if (ret == ETIMEDOUT)
-		ret = 0;
-	else if (ret == 0)
-		ret = -EINVAL;
-
- out:
+	ret = 0;
+out:
 	return ret;
 }
 
 int pi_cond_destroy(pi_cond_t *cond)
 {
-	int ret;
-	ret = pthread_cond_destroy(&cond->cond);
-	return ret;
+	memset(cond, 0, sizeof(*cond));
+	return 0;
 }
 
 int pi_cond_wait(pi_cond_t *cond)
 {
 	int ret;
-	ret = pthread_cond_wait(&cond->cond, &cond->mutex->mutex);
+
+	ret = pi_mutex_unlock(cond->mutex);
+	if (ret)
+		return ret;
+	ret = futex_wait_requeue_pi(cond, 0, NULL, cond->mutex);
 	return ret;
 }
 
 int pi_cond_timedwait(pi_cond_t *cond, const struct timespec *restrict abstime)
 {
 	int ret;
-	ret = pthread_cond_timedwait(&cond->cond, &cond->mutex->mutex, abstime);
+
+	ret = pi_mutex_unlock(cond->mutex);
+	if (ret)
+		return ret;
+	ret = futex_wait_requeue_pi(cond, 0, abstime, cond->mutex);
 	return ret;
 }
 
 int pi_cond_signal(pi_cond_t *cond)
 {
 	int ret;
-	ret = pthread_cond_signal(&cond->cond);
-	return ret;
+
+	ret = futex_cmp_requeue_pi(cond, 0, 0, cond->mutex);
+
+	if (ret < 0)
+		return ret;
+	return 0;
 }
 
 int pi_cond_broadcast(pi_cond_t *cond)
 {
 	int ret;
-	ret = pthread_cond_broadcast(&cond->cond);
-	return ret;
-}
 
+	ret = futex_cmp_requeue_pi(cond, 0, INT_MAX, cond->mutex);
+
+	if (ret < 0)
+		return ret;
+	return 0;
+}

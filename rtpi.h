@@ -40,7 +40,7 @@ int pi_mutex_unlock(pi_mutex_t *mutex);
  * PI Cond Interface
  */
 
-#define RTPI_COND_PSHARED     0x1
+#define RTPI_COND_PSHARED     RTPI_MUTEX_PSHARED
 
 pi_cond_t *pi_cond_alloc(void);
 

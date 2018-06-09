@@ -4,14 +4,18 @@
 #ifndef _RTPI_INTERNAL_H
 #define _RTPI_INTERNAL_H
 
+#include <linux/futex.h>
+
 #include "rtpi.h"
 
 typedef struct pi_mutex {
-	pthread_mutex_t mutex;
+	__u32 futex;
+	__u32 flags;
 } pi_mutex_t;
 
 typedef struct pi_cond {
-	pthread_cond_t cond;
+	__u32 cond;
+	__u32 flags;
 	pi_mutex_t *mutex;
 } pi_cond_t;
 
