@@ -6,6 +6,17 @@
 #include <stdbool.h>
 #include <string.h>
 
+static pid_t gettid(void)
+{
+	static __thread pid_t tid_this_thread;
+
+	if (tid_this_thread)
+		return tid_this_thread;
+
+	tid_this_thread = syscall(SYS_gettid);
+	return tid_this_thread;
+}
+
 pi_mutex_t *pi_mutex_alloc(void)
 {
 	return malloc(sizeof(pi_mutex_t));
@@ -45,10 +56,9 @@ int pi_mutex_destroy(pi_mutex_t *mutex)
 
 int pi_mutex_lock(pi_mutex_t *mutex)
 {
-	int ret;
-
-	ret = futex_lock_pi(&mutex->futex);
-	return ret;
+	if (pi_mutex_trylock(mutex))
+		return 0;
+	return futex_lock_pi(mutex);
 }
 
 int pi_mutex_trylock(pi_mutex_t *mutex)
@@ -66,9 +76,13 @@ int pi_mutex_trylock(pi_mutex_t *mutex)
 
 int pi_mutex_unlock(pi_mutex_t *mutex)
 {
-	int ret;
+	pid_t pid;
+	bool ret;
 
-	ret = futex_unlock_pi(&mutex->futex);
-	return ret;
+	pid = gettid();
+	ret = __sync_bool_compare_and_swap(&mutex->futex,
+					   pid, 0);
+	if (ret == true)
+		return 0;
+	return futex_unlock_pi(mutex);
 }
-
