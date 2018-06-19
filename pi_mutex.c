@@ -29,7 +29,6 @@ void pi_mutex_free(pi_mutex_t *mutex)
 
 int pi_mutex_init(pi_mutex_t *mutex, uint32_t flags)
 {
-	pthread_mutexattr_t attr;
 	int ret;
 
 	/* All RTPI mutexes are PRIO_INHERIT */
