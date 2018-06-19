@@ -9,14 +9,19 @@
 #include "rtpi.h"
 
 typedef struct pi_mutex {
-	__u32 futex;
-	__u32 flags;
+	__u32	futex;
+	__u32	flags;
 } pi_mutex_t;
 
 typedef struct pi_cond {
-	__u32 cond;
-	__u32 flags;
-	pi_mutex_t *mutex;
+	__u32		cond;
+	__u32		flags;
+
+	pi_mutex_t	priv_mut;
+	__u32		wake_id;
+	__u32		pending_wake;
+	__u32		pending_wait;
+	pi_mutex_t	*mutex;
 } pi_cond_t;
 
 #endif // _RTPI_INTERNAL_H

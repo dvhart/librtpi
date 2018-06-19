@@ -58,8 +58,11 @@ int pi_mutex_lock(pi_mutex_t *mutex)
 {
 	if (pi_mutex_trylock(mutex))
 		return 0;
+	/* XXX EWNERDEAD */
 	return futex_lock_pi(mutex);
 }
+
+#define FUTEX_TID_MASK          0x3fffffff
 
 int pi_mutex_trylock(pi_mutex_t *mutex)
 {
@@ -67,6 +70,9 @@ int pi_mutex_trylock(pi_mutex_t *mutex)
 	bool ret;
 
 	pid = gettid();
+	if (pid == (mutex->futex & FUTEX_TID_MASK))
+		return -EDEADLOCK;
+
 	ret = __sync_bool_compare_and_swap(&mutex->futex,
 					   0, pid);
 	if (ret == true)
@@ -80,6 +86,10 @@ int pi_mutex_unlock(pi_mutex_t *mutex)
 	bool ret;
 
 	pid = gettid();
+#if 0
+	XXX
+	if (pid != (mutex->futex & FUTEX_TID_MASK))
+#endif
 	ret = __sync_bool_compare_and_swap(&mutex->futex,
 					   pid, 0);
 	if (ret == true)

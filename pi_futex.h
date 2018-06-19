@@ -52,7 +52,7 @@ static inline int futex_cmp_requeue_PI(pi_cond_t *cond, __u32 val,
 			 get_op(FUTEX_CMP_REQUEUE_PI, cond->flags),
 			 1,
 			 (void *)(long)val2, &mutex->futex,
-			 val3);
+			 val);
 }
 
 #endif
