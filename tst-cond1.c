@@ -85,13 +85,15 @@ static int do_test (void)
 	}
 
 	/* Wait for the threads to start and block on their respective condvars.  */
-	for (i = 0; i < 20; i++) {
+	for (i = 0; i < 2; i++) {
 		sleep (1);
 		printf("Sig %d\n", i);
 		err = pi_cond_signal (sig1);
 		if (err != 0)
 			error (EXIT_FAILURE, err, "parent: failed to signal condition");
 	}
+	printf("BROAD\n");
+	err = pi_cond_broadcast (sig1);
 
 	for (i = 0; i < 20; i++) {
 		err = pthread_join (tthread[i], NULL);
