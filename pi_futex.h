@@ -46,7 +46,7 @@ static inline int futex_wait_requeue_pi(pi_cond_t *cond, __u32 val,
 
 static inline int futex_cmp_requeue_PI(pi_cond_t *cond, __u32 val,
 				       __u32 val2,
-				       pi_mutex_t *mutex, __u32 val3)
+				       pi_mutex_t *mutex)
 {
 	return sys_futex(&cond->cond,
 			 get_op(FUTEX_CMP_REQUEUE_PI, cond->flags),

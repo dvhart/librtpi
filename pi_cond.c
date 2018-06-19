@@ -152,8 +152,7 @@ int pi_cond_signal(pi_cond_t *cond)
 	pi_mutex_unlock(&cond->priv_mut);
 
 	do {
-		ret = futex_cmp_requeue_PI(cond, id, 0, &cond->priv_mut,
-					   0xffffffff);
+		ret = futex_cmp_requeue_PI(cond, id, 0, &cond->priv_mut);
 		if (ret > 0) {
 			/* Wakeup performed */
 			break;
@@ -196,8 +195,7 @@ int pi_cond_broadcast(pi_cond_t *cond)
 	pi_mutex_unlock(&cond->priv_mut);
 
 	do {
-		ret = futex_cmp_requeue_PI(cond, id, INT_MAX, &cond->priv_mut,
-					   0xffffffff);
+		ret = futex_cmp_requeue_PI(cond, id, INT_MAX, &cond->priv_mut);
 		if (ret >= 0) {
 			/* Wakeup performed */
 			break;
