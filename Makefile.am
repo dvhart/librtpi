@@ -4,9 +4,12 @@
 noinst_LIBRARIES = librtpi.a
 librtpi_a_SOURCES = rtpi.h rtpi_internal.h pi_futex.h pi_mutex.c pi_cond.c
 
-bin_PROGRAMS = test tst-condpi2
+bin_PROGRAMS = test tst-condpi2 tst-cond1
 test_SOURCES = test.c rtpi.h
 test_LDADD = librtpi.a -lpthread
 
 tst_condpi2_SOURCES = tst-condpi2.c rtpi.h
 tst_condpi2_LDADD = librtpi.a -lpthread
+
+tst_cond1_SOURCES = tst-cond1.c rtpi.h
+tst_cond1_LDADD = librtpi.a -lpthread
