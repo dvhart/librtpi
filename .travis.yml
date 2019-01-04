@@ -1,0 +1,5 @@
+language: C
+os: linux
+dist: xenial
+before_install:
+  - autoreconf --install
