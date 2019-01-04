@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: LGPL-2.1-only */
 /* Copyright © 2018 VMware, Inc. All Rights Reserved. */
 
-#ifndef _RTPI_H
-#define _RTPI_H
+#ifndef RPTI_H
+#define RPTI_H
 
 #include <errno.h>
 #include <inttypes.h>
@@ -58,4 +58,4 @@ int pi_cond_signal(pi_cond_t *cond);
 
 int pi_cond_broadcast(pi_cond_t *cond);
 
-#endif // _RTPI_H
+#endif // RPTI_H
