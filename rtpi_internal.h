@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: LGPL-2.1-only */
 /* Copyright © 2018 VMware, Inc. All Rights Reserved. */
 
-#ifndef _RTPI_INTERNAL_H
-#define _RTPI_INTERNAL_H
+#ifndef RPTI_H_INTERNAL_H
+#define RPTI_H_INTERNAL_H
 
 #include <linux/futex.h>
 
@@ -24,4 +24,4 @@ typedef struct pi_cond {
 	pi_mutex_t	*mutex;
 } pi_cond_t;
 
-#endif // _RTPI_INTERNAL_H
+#endif // RPTI_H_INTERNAL_H
