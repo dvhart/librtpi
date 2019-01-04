@@ -13,3 +13,7 @@ tst_condpi2_LDADD = librtpi.a -lpthread
 
 tst_cond1_SOURCES = tst-cond1.c rtpi.h
 tst_cond1_LDADD = librtpi.a -lpthread
+
+check_PROGRAMS = test_api tst-cond1 tst-condpi2
+TESTS = test_api tst-cond1 tst-condpi2.sh
+test: check
