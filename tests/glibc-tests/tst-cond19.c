@@ -22,54 +22,43 @@
 #include <stdlib.h>
 #include <time.h>
 
-
 static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 
-
-static int
-do_test (void)
+static int do_test(void)
 {
-  int result = 0;
-  struct timespec ts;
+	int result = 0;
+	struct timespec ts;
 
-  if (clock_gettime (CLOCK_REALTIME, &ts) != 0)
-    {
-      puts ("clock_gettime failed");
-      return 1;
-    }
+	if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
+		puts("clock_gettime failed");
+		return 1;
+	}
 
-  ts.tv_nsec = -1;
+	ts.tv_nsec = -1;
 
-  int e = pthread_cond_timedwait (&cond, &mut, &ts);
-  if (e == 0)
-    {
-      puts ("first cond_timedwait did not fail");
-      result = 1;
-    }
-  else if (e != EINVAL)
-    {
-      puts ("first cond_timedwait did not return EINVAL");
-      result = 1;
-    }
+	int e = pthread_cond_timedwait(&cond, &mut, &ts);
+	if (e == 0) {
+		puts("first cond_timedwait did not fail");
+		result = 1;
+	} else if (e != EINVAL) {
+		puts("first cond_timedwait did not return EINVAL");
+		result = 1;
+	}
 
-  ts.tv_nsec = 2000000000;
+	ts.tv_nsec = 2000000000;
 
-  e = pthread_cond_timedwait (&cond, &mut, &ts);
-  if (e == 0)
-    {
-      puts ("second cond_timedwait did not fail");
-      result = 1;
-    }
-  else if (e != EINVAL)
-    {
-      puts ("second cond_timedwait did not return EINVAL");
-      result = 1;
-    }
+	e = pthread_cond_timedwait(&cond, &mut, &ts);
+	if (e == 0) {
+		puts("second cond_timedwait did not fail");
+		result = 1;
+	} else if (e != EINVAL) {
+		puts("second cond_timedwait did not return EINVAL");
+		result = 1;
+	}
 
-  return result;
+	return result;
 }
-
 
 #define TEST_FUNCTION do_test ()
 #include "../test-skeleton.c"

@@ -31,87 +31,79 @@ bool exiting;
 int fd, spins, nn;
 enum { count = 8 };		/* Number of worker threads.  */
 
-void *
-tf (void *id)
+void *tf(void *id)
 {
-  pthread_mutex_lock (&lock);
+	pthread_mutex_lock(&lock);
 
-  if ((long) id == 0)
-    {
-      while (!exiting)
-	{
-	  if ((spins++ % 1000) == 0)
-	    write (fd, ".", 1);
-	  pthread_mutex_unlock (&lock);
+	if ((long)id == 0) {
+		while (!exiting) {
+			if ((spins++ % 1000) == 0)
+				write(fd, ".", 1);
+			pthread_mutex_unlock(&lock);
 
-	  pthread_mutex_lock (&lock);
-	  int njobs = rand () % (count + 1);
-	  nn = njobs;
-	  if ((rand () % 30) == 0)
-	    pthread_cond_broadcast (&cv);
-	  else
-	    while (njobs--)
-	      pthread_cond_signal (&cv);
+			pthread_mutex_lock(&lock);
+			int njobs = rand() % (count + 1);
+			nn = njobs;
+			if ((rand() % 30) == 0)
+				pthread_cond_broadcast(&cv);
+			else
+				while (njobs--)
+					pthread_cond_signal(&cv);
+		}
+
+		pthread_cond_broadcast(&cv);
+	} else {
+		while (!exiting) {
+			while (!nn && !exiting)
+				pthread_cond_wait(&cv, &lock);
+			--nn;
+			pthread_mutex_unlock(&lock);
+
+			pthread_mutex_lock(&lock);
+		}
 	}
 
-      pthread_cond_broadcast (&cv);
-    }
-  else
-    {
-      while (!exiting)
-	{
-	  while (!nn && !exiting)
-	    pthread_cond_wait (&cv, &lock);
-	  --nn;
-	  pthread_mutex_unlock (&lock);
-
-	  pthread_mutex_lock (&lock);
-	}
-    }
-
-  pthread_mutex_unlock (&lock);
-  return NULL;
+	pthread_mutex_unlock(&lock);
+	return NULL;
 }
 
-int
-do_test (void)
+int do_test(void)
 {
-  fd = open ("/dev/null", O_WRONLY);
-  if (fd < 0)
-    {
-      printf ("couldn't open /dev/null, %m\n");
-      return 1;
-    }
+	fd = open("/dev/null", O_WRONLY);
+	if (fd < 0) {
+		printf("couldn't open /dev/null, %m\n");
+		return 1;
+	}
 
-  pthread_t th[count + 1];
-  pthread_attr_t attr;
-  int i, ret, sz;
-  pthread_attr_init (&attr);
-  sz = sysconf (_SC_PAGESIZE);
-  if (sz < PTHREAD_STACK_MIN)
-	  sz = PTHREAD_STACK_MIN;
-  pthread_attr_setstacksize (&attr, sz);
+	pthread_t th[count + 1];
+	pthread_attr_t attr;
+	int i, ret, sz;
+	pthread_attr_init(&attr);
+	sz = sysconf(_SC_PAGESIZE);
+	if (sz < PTHREAD_STACK_MIN)
+		sz = PTHREAD_STACK_MIN;
+	pthread_attr_setstacksize(&attr, sz);
 
-  for (i = 0; i <= count; ++i)
-    if ((ret = pthread_create (&th[i], &attr, tf, (void *) (long) i)) != 0)
-      {
-	errno = ret;
-	printf ("pthread_create %d failed: %m\n", i);
-	return 1;
-      }
+	for (i = 0; i <= count; ++i)
+		if ((ret =
+		     pthread_create(&th[i], &attr, tf, (void *)(long)i)) != 0) {
+			errno = ret;
+			printf("pthread_create %d failed: %m\n", i);
+			return 1;
+		}
 
-  struct timespec ts = { .tv_sec = 20, .tv_nsec = 0 };
-  while (nanosleep (&ts, &ts) != 0);
+	struct timespec ts = {.tv_sec = 20,.tv_nsec = 0 };
+	while (nanosleep(&ts, &ts) != 0) ;
 
-  pthread_mutex_lock (&lock);
-  exiting = true;
-  pthread_mutex_unlock (&lock);
+	pthread_mutex_lock(&lock);
+	exiting = true;
+	pthread_mutex_unlock(&lock);
 
-  for (i = 0; i < count; ++i)
-    pthread_join (th[i], NULL);
+	for (i = 0; i < count; ++i)
+		pthread_join(th[i], NULL);
 
-  close (fd);
-  return 0;
+	close(fd);
+	return 0;
 }
 
 #define TEST_FUNCTION do_test ()

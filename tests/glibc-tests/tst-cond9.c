@@ -23,127 +23,107 @@
 #include <time.h>
 #include <sys/time.h>
 
-
 static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t mut = PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP;
 
-
-static void *
-tf (void *arg)
+static void *tf(void *arg)
 {
-  int err = pthread_cond_wait (&cond, &mut);
-  if (err == 0)
-    {
-      puts ("cond_wait did not fail");
-      exit (1);
-    }
+	int err = pthread_cond_wait(&cond, &mut);
+	if (err == 0) {
+		puts("cond_wait did not fail");
+		exit(1);
+	}
 
-  if (err != EPERM)
-    {
-      printf ("cond_wait didn't return EPERM but %d\n", err);
-      exit (1);
-    }
+	if (err != EPERM) {
+		printf("cond_wait didn't return EPERM but %d\n", err);
+		exit(1);
+	}
 
+	/* Current time.  */
+	struct timeval tv;
+	(void)gettimeofday(&tv, NULL);
+	/* +1000 seconds in correct format.  */
+	struct timespec ts;
+	TIMEVAL_TO_TIMESPEC(&tv, &ts);
+	ts.tv_sec += 1000;
 
-  /* Current time.  */
-  struct timeval tv;
-  (void) gettimeofday (&tv, NULL);
-  /* +1000 seconds in correct format.  */
-  struct timespec ts;
-  TIMEVAL_TO_TIMESPEC (&tv, &ts);
-  ts.tv_sec += 1000;
+	err = pthread_cond_timedwait(&cond, &mut, &ts);
+	if (err == 0) {
+		puts("cond_timedwait did not fail");
+		exit(1);
+	}
 
-  err = pthread_cond_timedwait (&cond, &mut, &ts);
-  if (err == 0)
-    {
-      puts ("cond_timedwait did not fail");
-      exit (1);
-    }
+	if (err != EPERM) {
+		printf("cond_timedwait didn't return EPERM but %d\n", err);
+		exit(1);
+	}
 
-  if (err != EPERM)
-    {
-      printf ("cond_timedwait didn't return EPERM but %d\n", err);
-      exit (1);
-    }
-
-  return (void *) 1l;
+	return (void *)1l;
 }
 
-
-static int
-do_test (void)
+static int do_test(void)
 {
-  pthread_t th;
-  int err;
+	pthread_t th;
+	int err;
 
-  printf ("&cond = %p\n&mut = %p\n", &cond, &mut);
+	printf("&cond = %p\n&mut = %p\n", &cond, &mut);
 
-  err = pthread_cond_wait (&cond, &mut);
-  if (err == 0)
-    {
-      puts ("cond_wait did not fail");
-      exit (1);
-    }
+	err = pthread_cond_wait(&cond, &mut);
+	if (err == 0) {
+		puts("cond_wait did not fail");
+		exit(1);
+	}
 
-  if (err != EPERM)
-    {
-      printf ("cond_wait didn't return EPERM but %d\n", err);
-      exit (1);
-    }
+	if (err != EPERM) {
+		printf("cond_wait didn't return EPERM but %d\n", err);
+		exit(1);
+	}
 
+	/* Current time.  */
+	struct timeval tv;
+	(void)gettimeofday(&tv, NULL);
+	/* +1000 seconds in correct format.  */
+	struct timespec ts;
+	TIMEVAL_TO_TIMESPEC(&tv, &ts);
+	ts.tv_sec += 1000;
 
-  /* Current time.  */
-  struct timeval tv;
-  (void) gettimeofday (&tv, NULL);
-  /* +1000 seconds in correct format.  */
-  struct timespec ts;
-  TIMEVAL_TO_TIMESPEC (&tv, &ts);
-  ts.tv_sec += 1000;
+	err = pthread_cond_timedwait(&cond, &mut, &ts);
+	if (err == 0) {
+		puts("cond_timedwait did not fail");
+		exit(1);
+	}
 
-  err = pthread_cond_timedwait (&cond, &mut, &ts);
-  if (err == 0)
-    {
-      puts ("cond_timedwait did not fail");
-      exit (1);
-    }
+	if (err != EPERM) {
+		printf("cond_timedwait didn't return EPERM but %d\n", err);
+		exit(1);
+	}
 
-  if (err != EPERM)
-    {
-      printf ("cond_timedwait didn't return EPERM but %d\n", err);
-      exit (1);
-    }
+	if (pthread_mutex_lock(&mut) != 0) {
+		puts("parent: mutex_lock failed");
+		exit(1);
+	}
 
-  if (pthread_mutex_lock (&mut) != 0)
-    {
-      puts ("parent: mutex_lock failed");
-      exit (1);
-    }
+	puts("creating thread");
 
-  puts ("creating thread");
+	if (pthread_create(&th, NULL, tf, NULL) != 0) {
+		puts("create failed");
+		exit(1);
+	}
 
-  if (pthread_create (&th, NULL, tf, NULL) != 0)
-    {
-      puts ("create failed");
-      exit (1);
-    }
+	void *r;
+	if (pthread_join(th, &r) != 0) {
+		puts("join failed");
+		exit(1);
+	}
+	if (r != (void *)1l) {
+		puts("thread has wrong return value");
+		exit(1);
+	}
 
-  void *r;
-  if (pthread_join (th, &r) != 0)
-    {
-      puts ("join failed");
-      exit (1);
-    }
-  if (r != (void *) 1l)
-    {
-      puts ("thread has wrong return value");
-      exit (1);
-    }
+	puts("done");
 
-  puts ("done");
-
-  return 0;
+	return 0;
 }
-
 
 #define TEST_FUNCTION do_test ()
 #include "../test-skeleton.c"

@@ -22,7 +22,7 @@
 #include <string.h>
 #include <unistd.h>
 
-static int do_test (void);
+static int do_test(void);
 
 #define TEST_FUNCTION do_test ()
 #include "../test-skeleton.c"
@@ -31,81 +31,70 @@ static int do_test (void);
    required that there are no spurious wakeups if only more readers
    are added.  This is a reasonable demand.  */
 
-
 static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 
-
 #define N 10
 
-
-static void *
-tf (void *arg)
+static void *tf(void *arg)
 {
-  int i = (long int) arg;
-  int err;
+	int i = (long int)arg;
+	int err;
 
-  /* Get the mutex.  */
-  err = pthread_mutex_lock (&mut);
-  if (err != 0)
-    {
-      printf ("child %d mutex_lock failed: %s\n", i, strerror (err));
-      exit (1);
-    }
+	/* Get the mutex.  */
+	err = pthread_mutex_lock(&mut);
+	if (err != 0) {
+		printf("child %d mutex_lock failed: %s\n", i, strerror(err));
+		exit(1);
+	}
 
-  /* This call should never return.  */
-  xpthread_cond_wait (&cond, &mut);
-  puts ("error: pthread_cond_wait in tf returned");
+	/* This call should never return.  */
+	xpthread_cond_wait(&cond, &mut);
+	puts("error: pthread_cond_wait in tf returned");
 
-  /* We should never get here.  */
-  exit (1);
+	/* We should never get here.  */
+	exit(1);
 
-  return NULL;
+	return NULL;
 }
 
-
-static int
-do_test (void)
+static int do_test(void)
 {
-  int err;
-  int i;
+	int err;
+	int i;
 
-  for (i = 0; i < N; ++i)
-    {
-      pthread_t th;
+	for (i = 0; i < N; ++i) {
+		pthread_t th;
 
-      if (i != 0)
-	{
-	  /* Release the mutex.  */
-	  err = pthread_mutex_unlock (&mut);
-	  if (err != 0)
-	    {
-	      printf ("mutex_unlock %d failed: %s\n", i, strerror (err));
-	      return 1;
-	    }
+		if (i != 0) {
+			/* Release the mutex.  */
+			err = pthread_mutex_unlock(&mut);
+			if (err != 0) {
+				printf("mutex_unlock %d failed: %s\n", i,
+				       strerror(err));
+				return 1;
+			}
+		}
+
+		err = pthread_create(&th, NULL, tf, (void *)(long int)i);
+		if (err != 0) {
+			printf("create %d failed: %s\n", i, strerror(err));
+			return 1;
+		}
+
+		/* Get the mutex.  */
+		err = pthread_mutex_lock(&mut);
+		if (err != 0) {
+			printf("mutex_lock %d failed: %s\n", i, strerror(err));
+			return 1;
+		}
 	}
 
-      err = pthread_create (&th, NULL, tf, (void *) (long int) i);
-      if (err != 0)
-	{
-	  printf ("create %d failed: %s\n", i, strerror (err));
-	  return 1;
-	}
+	delayed_exit(1);
 
-      /* Get the mutex.  */
-      err = pthread_mutex_lock (&mut);
-      if (err != 0)
-	{
-	  printf ("mutex_lock %d failed: %s\n", i, strerror (err));
-	  return 1;
-	}
-    }
+	/* This call should never return.  */
+	xpthread_cond_wait(&cond, &mut);
 
-  delayed_exit (1);
-
-  /* This call should never return.  */
-  xpthread_cond_wait (&cond, &mut);
-
-  puts ("error: pthread_cond_wait in do_test returned");
-  return 1;
+	puts("error: pthread_cond_wait in do_test returned");
+	return 1;
 }

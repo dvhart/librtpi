@@ -34,75 +34,70 @@ pthread_cond_t cond;
        } \
   })
 
-
-void
-clean (void *arg)
+void clean(void *arg)
 {
-  puts ("clean: Unlocking mutex...");
-  pthread_mutex_unlock ((pthread_mutex_t *) arg);
-  puts ("clean: Mutex unlocked...");
+	puts("clean: Unlocking mutex...");
+	pthread_mutex_unlock((pthread_mutex_t *) arg);
+	puts("clean: Mutex unlocked...");
 }
 
-void *
-thr (void *arg)
+void *thr(void *arg)
 {
-  int ret = 0;
-  pthread_mutexattr_t mutexAttr;
-  ret = pthread_mutexattr_init (&mutexAttr);
-  CHECK_RETURN_VAL_OR_FAIL (ret, "pthread_mutexattr_init");
+	int ret = 0;
+	pthread_mutexattr_t mutexAttr;
+	ret = pthread_mutexattr_init(&mutexAttr);
+	CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_mutexattr_init");
 
-  ret = pthread_mutexattr_setprotocol (&mutexAttr, PTHREAD_PRIO_INHERIT);
-  CHECK_RETURN_VAL_OR_FAIL (ret, "pthread_mutexattr_setprotocol");
+	ret = pthread_mutexattr_setprotocol(&mutexAttr, PTHREAD_PRIO_INHERIT);
+	CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_mutexattr_setprotocol");
 
-  ret = pthread_mutex_init (&mutex, &mutexAttr);
-  CHECK_RETURN_VAL_OR_FAIL (ret, "pthread_mutex_init");
+	ret = pthread_mutex_init(&mutex, &mutexAttr);
+	CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_mutex_init");
 
-  ret = pthread_cond_init (&cond, 0);
-  CHECK_RETURN_VAL_OR_FAIL (ret, "pthread_cond_init");
+	ret = pthread_cond_init(&cond, 0);
+	CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_cond_init");
 
-  puts ("th: Init done, entering wait...");
+	puts("th: Init done, entering wait...");
 
-  pthread_cleanup_push (clean, (void *) &mutex);
-  ret = pthread_mutex_lock (&mutex);
-  CHECK_RETURN_VAL_OR_FAIL (ret, "pthread_mutex_lock");
-  while (1)
-    {
-      ret = pthread_cond_wait (&cond, &mutex);
-      CHECK_RETURN_VAL_OR_FAIL (ret, "pthread_cond_wait");
-    }
-  pthread_cleanup_pop (1);
+	pthread_cleanup_push(clean, (void *)&mutex);
+	ret = pthread_mutex_lock(&mutex);
+	CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_mutex_lock");
+	while (1) {
+		ret = pthread_cond_wait(&cond, &mutex);
+		CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_cond_wait");
+	}
+	pthread_cleanup_pop(1);
 
 out:
-  return (void *) (uintptr_t) ret;
+	return (void *)(uintptr_t) ret;
 }
 
-int
-do_test (void)
+int do_test(void)
 {
-  pthread_t thread;
-  int ret = 0;
-  void *thr_ret = 0;
-  ret = pthread_create (&thread, 0, thr, &thr_ret);
-  CHECK_RETURN_VAL_OR_FAIL (ret, "pthread_create");
+	pthread_t thread;
+	int ret = 0;
+	void *thr_ret = 0;
+	ret = pthread_create(&thread, 0, thr, &thr_ret);
+	CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_create");
 
-  puts ("main: Thread created, waiting a bit...");
-  sleep (2);
+	puts("main: Thread created, waiting a bit...");
+	sleep(2);
 
-  puts ("main: Cancelling thread...");
-  ret = pthread_cancel (thread);
-  CHECK_RETURN_VAL_OR_FAIL (ret, "pthread_cancel");
+	puts("main: Cancelling thread...");
+	ret = pthread_cancel(thread);
+	CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_cancel");
 
-  puts ("main: Joining th...");
-  ret = pthread_join (thread, NULL);
-  CHECK_RETURN_VAL_OR_FAIL (ret, "pthread_join");
+	puts("main: Joining th...");
+	ret = pthread_join(thread, NULL);
+	CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_join");
 
-  if (thr_ret != NULL)
-    return 1;
+	if (thr_ret != NULL)
+		return 1;
 
-  puts ("main: Joined thread, done!");
+	puts("main: Joined thread, done!");
 
 out:
-  return ret;
+	return ret;
 }
 
 #define TEST_FUNCTION do_test ()

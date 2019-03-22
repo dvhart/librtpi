@@ -30,75 +30,70 @@ bool n, exiting;
 FILE *f;
 enum { count = 8 };		/* Number of worker threads.  */
 
-void *
-tf (void *dummy)
+void *tf(void *dummy)
 {
-  bool loop = true;
+	bool loop = true;
 
-  while (loop)
-    {
-      pthread_mutex_lock (&lock);
-      while (n && !exiting)
-	pthread_cond_wait (&cv, &lock);
-      n = true;
-      pthread_mutex_unlock (&lock);
+	while (loop) {
+		pthread_mutex_lock(&lock);
+		while (n && !exiting)
+			pthread_cond_wait(&cv, &lock);
+		n = true;
+		pthread_mutex_unlock(&lock);
 
-      fputs (".", f);
+		fputs(".", f);
 
-      pthread_mutex_lock (&lock);
-      n = false;
-      if (exiting)
-	loop = false;
+		pthread_mutex_lock(&lock);
+		n = false;
+		if (exiting)
+			loop = false;
 #ifdef UNLOCK_AFTER_BROADCAST
-      pthread_cond_broadcast (&cv);
-      pthread_mutex_unlock (&lock);
+		pthread_cond_broadcast(&cv);
+		pthread_mutex_unlock(&lock);
 #else
-      pthread_mutex_unlock (&lock);
-      pthread_cond_broadcast (&cv);
+		pthread_mutex_unlock(&lock);
+		pthread_cond_broadcast(&cv);
 #endif
-    }
+	}
 
-  return NULL;
+	return NULL;
 }
 
-int
-do_test (void)
+int do_test(void)
 {
-  f = fopen ("/dev/null", "w");
-  if (f == NULL)
-    {
-      printf ("couldn't open /dev/null, %m\n");
-      return 1;
-    }
+	f = fopen("/dev/null", "w");
+	if (f == NULL) {
+		printf("couldn't open /dev/null, %m\n");
+		return 1;
+	}
 
-  pthread_t th[count];
-  pthread_attr_t attr;
-  int i, ret, sz;
-  pthread_attr_init (&attr);
-  sz = sysconf (_SC_PAGESIZE);
-  if (sz < PTHREAD_STACK_MIN)
-	  sz = PTHREAD_STACK_MIN;
-  pthread_attr_setstacksize (&attr, sz);
-  for (i = 0; i < count; ++i)
-    if ((ret = pthread_create (&th[i], &attr, tf, NULL)) != 0)
-      {
-	errno = ret;
-	printf ("pthread_create %d failed: %m\n", i);
-	return 1;
-      }
+	pthread_t th[count];
+	pthread_attr_t attr;
+	int i, ret, sz;
+	pthread_attr_init(&attr);
+	sz = sysconf(_SC_PAGESIZE);
+	if (sz < PTHREAD_STACK_MIN)
+		sz = PTHREAD_STACK_MIN;
+	pthread_attr_setstacksize(&attr, sz);
+	for (i = 0; i < count; ++i)
+		if ((ret = pthread_create(&th[i], &attr, tf, NULL)) != 0) {
+			errno = ret;
+			printf("pthread_create %d failed: %m\n", i);
+			return 1;
+		}
 
-  struct timespec ts = { .tv_sec = 20, .tv_nsec = 0 };
-  while (nanosleep (&ts, &ts) != 0);
+	struct timespec ts = {.tv_sec = 20,.tv_nsec = 0 };
+	while (nanosleep(&ts, &ts) != 0) ;
 
-  pthread_mutex_lock (&lock);
-  exiting = true;
-  pthread_mutex_unlock (&lock);
+	pthread_mutex_lock(&lock);
+	exiting = true;
+	pthread_mutex_unlock(&lock);
 
-  for (i = 0; i < count; ++i)
-    pthread_join (th[i], NULL);
+	for (i = 0; i < count; ++i)
+		pthread_join(th[i], NULL);
 
-  fclose (f);
-  return 0;
+	fclose(f);
+	return 0;
 }
 
 #define TEST_FUNCTION do_test ()

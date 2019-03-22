@@ -21,76 +21,70 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 
-
-static void *
-tf (void *p)
+static void *tf(void *p)
 {
-  int err;
+	int err;
 
-  err = pthread_mutex_lock (&mut);
-  if (err != 0)
-    error (EXIT_FAILURE, err, "child: cannot get mutex");
+	err = pthread_mutex_lock(&mut);
+	if (err != 0)
+		error(EXIT_FAILURE, err, "child: cannot get mutex");
 
-  puts ("child: got mutex; signalling");
+	puts("child: got mutex; signalling");
 
-  pthread_cond_signal (&cond);
+	pthread_cond_signal(&cond);
 
-  puts ("child: unlock");
+	puts("child: unlock");
 
-  err = pthread_mutex_unlock (&mut);
-  if (err != 0)
-    error (EXIT_FAILURE, err, "child: cannot unlock");
+	err = pthread_mutex_unlock(&mut);
+	if (err != 0)
+		error(EXIT_FAILURE, err, "child: cannot unlock");
 
-  puts ("child: done");
+	puts("child: done");
 
-  return NULL;
+	return NULL;
 }
 
-
-static int
-do_test (void)
+static int do_test(void)
 {
-  pthread_t th;
-  int err;
+	pthread_t th;
+	int err;
 
-  printf ("&cond = %p\n&mut = %p\n", &cond, &mut);
+	printf("&cond = %p\n&mut = %p\n", &cond, &mut);
 
-  puts ("parent: get mutex");
+	puts("parent: get mutex");
 
-  err = pthread_mutex_lock (&mut);
-  if (err != 0)
-    error (EXIT_FAILURE, err, "parent: cannot get mutex");
+	err = pthread_mutex_lock(&mut);
+	if (err != 0)
+		error(EXIT_FAILURE, err, "parent: cannot get mutex");
 
-  puts ("parent: create child");
+	puts("parent: create child");
 
-  err = pthread_create (&th, NULL, tf, NULL);
-  if (err != 0)
-    error (EXIT_FAILURE, err, "parent: cannot create thread");
+	err = pthread_create(&th, NULL, tf, NULL);
+	if (err != 0)
+		error(EXIT_FAILURE, err, "parent: cannot create thread");
 
-  puts ("parent: wait for condition");
+	puts("parent: wait for condition");
 
-  /* This test will fail on spurious wake-ups, which are allowed; however,
-     the current implementation shouldn't produce spurious wake-ups in the
-     scenario we are testing here.  */
-  err = pthread_cond_wait (&cond, &mut);
-  if (err != 0)
-    error (EXIT_FAILURE, err, "parent: cannot wait fir signal");
+	/* This test will fail on spurious wake-ups, which are allowed; however,
+	   the current implementation shouldn't produce spurious wake-ups in the
+	   scenario we are testing here.  */
+	err = pthread_cond_wait(&cond, &mut);
+	if (err != 0)
+		error(EXIT_FAILURE, err, "parent: cannot wait fir signal");
 
-  puts ("parent: got signal");
+	puts("parent: got signal");
 
-  err = pthread_join (th, NULL);
-  if (err != 0)
-    error (EXIT_FAILURE, err, "parent: failed to join");
+	err = pthread_join(th, NULL);
+	if (err != 0)
+		error(EXIT_FAILURE, err, "parent: failed to join");
 
-  puts ("done");
+	puts("done");
 
-  return 0;
+	return 0;
 }
-
 
 #define TEST_FUNCTION do_test ()
 #include "../test-skeleton.c"
