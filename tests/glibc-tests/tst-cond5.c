@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <sys/time.h>
 
 #include "rtpi.h"
 
@@ -33,7 +32,6 @@ static int do_test(void)
 {
 	int err;
 	struct timespec ts;
-	struct timeval tv;
 
 	/* Get the mutex.  */
 	if (pi_mutex_lock(&mut) != 0) {
@@ -42,12 +40,12 @@ static int do_test(void)
 	}
 
 	/* Waiting for the condition will fail.  But we want the timeout here.  */
-	if (gettimeofday(&tv, NULL) != 0) {
-		puts("gettimeofday failed");
+	err = clock_gettime(CLOCK_MONOTONIC, &ts);
+	if (err != 0) {
+		printf("clock_gettime failed with error %s\n", strerror(err));
 		exit(1);
 	}
 
-	TIMEVAL_TO_TIMESPEC(&tv, &ts);
 	ts.tv_nsec += 500000000;
 	if (ts.tv_nsec >= 1000000000) {
 		ts.tv_nsec -= 1000000000;

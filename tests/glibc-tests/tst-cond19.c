@@ -32,7 +32,7 @@ static int do_test(void)
 	int result = 0;
 	struct timespec ts;
 
-	if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
+	if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
 		puts("clock_gettime failed");
 		return 1;
 	}

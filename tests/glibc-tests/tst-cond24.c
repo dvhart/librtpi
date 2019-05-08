@@ -24,7 +24,6 @@
 #include <sys/types.h>
 #include <sys/syscall.h>
 #include <unistd.h>
-#include <sys/time.h>
 #include <time.h>
 
 #include "rtpi.h"
@@ -57,7 +56,7 @@ void *thread_fun_timed(void *arg)
 
 		while (!pending) {
 			struct timespec ts;
-			clock_gettime(CLOCK_REALTIME, &ts);
+			clock_gettime(CLOCK_MONOTONIC, &ts);
 			ts.tv_sec += 20;
 			rv = pi_cond_timedwait(&cond, &ts);
 

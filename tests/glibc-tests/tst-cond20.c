@@ -35,6 +35,8 @@ static int count;
 static void *tf(void *p)
 {
 	int i;
+	int err;
+
 	for (i = 0; i < ROUNDS; ++i) {
 		pi_mutex_lock(&mut);
 
@@ -42,12 +44,14 @@ static void *tf(void *p)
 			pi_cond_signal(&cond2);
 
 #ifdef TIMED
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
 		struct timespec ts;
 		/* Wait three seconds.  */
-		ts.tv_sec = tv.tv_sec + 3;
-		ts.tv_nsec = tv.tv_usec * 1000;
+		err = clock_gettime(CLOCK_MONOTONIC, &ts);
+		if (err != 0) {
+			puts("child: clock_gettime failed");
+			exit(1);
+		}
+		ts.tv_sec += 3;
 		pi_cond_timedwait(&cond, &ts);
 #else
 		pi_cond_wait(&cond);
@@ -55,7 +59,7 @@ static void *tf(void *p)
 
 		pi_mutex_unlock(&mut);
 
-		int err = pthread_barrier_wait(&b);
+		err = pthread_barrier_wait(&b);
 		if (err != 0 && err != PTHREAD_BARRIER_SERIAL_THREAD) {
 			puts("child: barrier_wait failed");
 			exit(1);
