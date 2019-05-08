@@ -21,7 +21,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <sys/time.h>
 
 #include "rtpi.h"
 
@@ -41,12 +40,12 @@ static void *tf(void *arg)
 		exit(1);
 	}
 
-	/* Current time.  */
-	struct timeval tv;
-	(void)gettimeofday(&tv, NULL);
-	/* +1000 seconds in correct format.  */
 	struct timespec ts;
-	TIMEVAL_TO_TIMESPEC(&tv, &ts);
+	err = clock_gettime(CLOCK_MONOTONIC, &ts);
+	if (err != 0) {
+		puts("child: clock_gettime failed");
+		exit(1);
+	}
 	ts.tv_sec += 1000;
 
 	err = pi_cond_timedwait(&cond, &ts);
@@ -65,6 +64,7 @@ static void *tf(void *arg)
 
 static int do_test(void)
 {
+	struct timespec ts;
 	pthread_t th;
 	int err;
 
@@ -82,11 +82,11 @@ static int do_test(void)
 	}
 
 	/* Current time.  */
-	struct timeval tv;
-	(void)gettimeofday(&tv, NULL);
-	/* +1000 seconds in correct format.  */
-	struct timespec ts;
-	TIMEVAL_TO_TIMESPEC(&tv, &ts);
+	err = clock_gettime(CLOCK_MONOTONIC, &ts);
+	if (err != 0) {
+		puts("clock_gettime failed");
+		exit(1);
+	}
 	ts.tv_sec += 1000;
 
 	err = pi_cond_timedwait(&cond, &ts);

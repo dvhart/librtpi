@@ -26,7 +26,6 @@
 #include <sys/types.h>
 #include <sys/syscall.h>
 #include <unistd.h>
-#include <sys/time.h>
 #include <time.h>
 
 #include "rtpi.h"
@@ -139,7 +138,7 @@ void *timed_waiter(void *u)
 	for (i = 0; i < ITERS / NUM; i++) {
 		struct timespec ts;
 
-		if ((ret = clock_gettime(CLOCK_REALTIME, &ts)) != 0) {
+		if ((ret = clock_gettime(CLOCK_MONOTONIC, &ts)) != 0) {
 			tret = (void *)(uintptr_t) 1;
 			printf("%u:clock_gettime failed: %s\n", seq,
 			       strerror(errno));

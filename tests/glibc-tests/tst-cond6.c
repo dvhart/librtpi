@@ -24,7 +24,6 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/mman.h>
-#include <sys/time.h>
 #include <sys/wait.h>
 
 #include "rtpi.h"
@@ -107,7 +106,6 @@ static int do_test(void)
 		exit(1);
 	} else if (pid == 0) {
 		struct timespec ts;
-		struct timeval tv;
 
 		if (pi_mutex_lock(mut2) != 0) {
 			puts("child: mutex_lock failed");
@@ -119,12 +117,11 @@ static int do_test(void)
 			exit(1);
 		}
 
-		if (gettimeofday(&tv, NULL) != 0) {
-			puts("gettimeofday failed");
+		if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
+			puts("child: clock_gettime failed");
 			exit(1);
 		}
 
-		TIMEVAL_TO_TIMESPEC(&tv, &ts);
 		ts.tv_nsec += 500000000;
 		if (ts.tv_nsec >= 1000000000) {
 			ts.tv_nsec -= 1000000000;
