@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-2.1-only
 // Copyright © 2018 VMware, Inc. All Rights Reserved.
 
-#include "rtpi_internal.h"
+#include "rtpi.h"
 #include "pi_futex.h"
 #include <stdbool.h>
 #include <string.h>

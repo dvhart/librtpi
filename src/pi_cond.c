@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
-#include "rtpi_internal.h"
+#include "rtpi.h"
 #include "pi_futex.h"
 
 /*
@@ -24,7 +24,7 @@ void pi_cond_free(pi_cond_t *cond)
 	free(cond);
 }
 
-int pi_cond_init(pi_cond_t *cond, struct pi_mutex *mutex, uint32_t flags)
+int pi_cond_init(pi_cond_t *cond, pi_mutex_t *mutex, uint32_t flags)
 {
 	struct timespec ts = { 0, 0 };
 	int ret;

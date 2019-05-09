@@ -129,10 +129,15 @@ condition variable.
 #### int pi_cond_broadcast(pi_cond_t \*cond)
 
 ## Initializers
-No initializers will be provided as the parallel glibc implementation requires
-the use of attrs to setup the protocol and clock at a minimum. RTPI also
-requires a known mutex to be associated with a condition variable at the time of
-initialization.
+
+#### DEFINE_PI_MUTEX(mutex, flags)
+
+Defines and initializes a PI aware mutex.
+
+#### DEFINE_PI_COND(condvar, mutex, flags)
+
+Defines and initializes a PI aware conditional variable. The mutex is
+associated with the conditional variable at this time.
 
 # C++ Specification
 WRITEME - after the C Specification is complete
