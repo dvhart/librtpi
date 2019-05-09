@@ -10,12 +10,16 @@
 #include <stdlib.h>
 #include <time.h>
 
-typedef struct pi_mutex pi_mutex_t;
-typedef struct pi_cond pi_cond_t;
+#include "rtpi_internal.h"
+
+typedef union pi_mutex pi_mutex_t;
+typedef union pi_cond pi_cond_t;
 
 /*
  * PI Mutex Interface
  */
+#define DEFINE_PI_MUTEX(mutex, flags) \
+	pi_mutex_t mutex = PI_MUTEX_INIT(flags)
 
 #define RTPI_MUTEX_PSHARED    0x1
 //#define RTPI_MUTEX_ROBUST     0x2
@@ -39,6 +43,8 @@ int pi_mutex_unlock(pi_mutex_t *mutex);
 /*
  * PI Cond Interface
  */
+#define DEFINE_PI_COND(condvar, mutex, flags) \
+	pi_cond_t condvar = PI_COND_INIT(mutex, flags)
 
 #define RTPI_COND_PSHARED     RTPI_MUTEX_PSHARED
 
