@@ -10,6 +10,7 @@ AC_CONFIG_FILES([
  Makefile
  src/Makefile
  tests/Makefile
+ tests/glibc-tests/Makefile
 ])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_OUTPUT
