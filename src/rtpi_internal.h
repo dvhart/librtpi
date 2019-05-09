@@ -6,22 +6,42 @@
 
 #include <linux/futex.h>
 
-#include "rtpi.h"
+/*
+ * PI Mutex
+ */
+union pi_mutex {
+	struct {
+		__u32	futex;
+		__u32	flags;
+	};
+	__u8 pad[64];
+} __attribute__ ((aligned(64)));
 
-typedef struct pi_mutex {
-	__u32	futex;
-	__u32	flags;
-} pi_mutex_t;
+#define PI_MUTEX_INIT(f) { .futex = 0, .flags = f }
 
-typedef struct pi_cond {
-	__u32		cond;
-	__u32		flags;
+/*
+ * PI Cond
+ */
+union pi_cond {
+	struct {
+		union pi_mutex	priv_mut;
+		union pi_mutex	*mutex;
+		__u32		cond;
+		__u32		flags;
+		__u32		wake_id;
+		__u32		pending_wake;
+		__u32		pending_wait;
+	};
+	__u8 pad[128];
+} __attribute__ ((aligned(64)));
 
-	pi_mutex_t	priv_mut;
-	__u32		wake_id;
-	__u32		pending_wake;
-	__u32		pending_wait;
-	pi_mutex_t	*mutex;
-} pi_cond_t;
+#define PI_COND_INIT(m, f) \
+	{ .priv_mut = PI_MUTEX_INIT(f) \
+	, .mutex = m \
+	, .cond = 0 \
+	, .flags = f \
+	, .wake_id = 0 \
+	, .pending_wake = 0 \
+	, .pending_wait = 0 }
 
 #endif // RPTI_H_INTERNAL_H
