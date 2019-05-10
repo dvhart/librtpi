@@ -29,26 +29,23 @@
 static char fname[] = "/tmp/tst-cond12-XXXXXX";
 static int fd;
 
-static void prepare(void);
-#define PREPARE(argc, argv) prepare ()
-
-static int do_test(void);
-#define TEST_FUNCTION do_test ()
-
-#include "../test-skeleton.c"
-
-static void prepare(void)
+static void prepare(int argc, char* argv[])
 {
 	fd = mkstemp(fname);
 	if (fd == -1) {
 		printf("mkstemp failed: %m\n");
 		exit(1);
 	}
-	add_temp_file(fname);
+
 	if (ftruncate(fd, 1000) < 0) {
 		printf("ftruncate failed: %m\n");
 		exit(1);
 	}
+}
+
+static void cleanup(void)
+{
+	remove(fname);
 }
 
 static int do_test(void)
