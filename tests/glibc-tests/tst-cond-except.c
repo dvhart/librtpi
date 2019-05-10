@@ -22,6 +22,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "rtpi.h"
+
 pi_mutex_t mutex;
 pi_cond_t cond;
 
@@ -44,17 +46,11 @@ void clean(void *arg)
 void *thr(void *arg)
 {
 	int ret = 0;
-	pthread_mutexattr_t mutexAttr;
-	ret = pthread_mutexattr_init(&mutexAttr);
-	CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_mutexattr_init");
 
-	ret = pthread_mutexattr_setprotocol(&mutexAttr, PTHREAD_PRIO_INHERIT);
-	CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_mutexattr_setprotocol");
-
-	ret = pi_mutex_init(&mutex, &mutexAttr);
+	ret = pi_mutex_init(&mutex, 0);
 	CHECK_RETURN_VAL_OR_FAIL(ret, "pi_mutex_init");
 
-	ret = pi_cond_init(&cond, 0);
+	ret = pi_cond_init(&cond, &mutex, 0);
 	CHECK_RETURN_VAL_OR_FAIL(ret, "pi_cond_init");
 
 	puts("th: Init done, entering wait...");
