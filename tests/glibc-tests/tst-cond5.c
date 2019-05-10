@@ -24,30 +24,16 @@
 #include <time.h>
 #include <sys/time.h>
 
-static pi_mutex_t mut;
-static pi_cond_t cond = PTHREAD_COND_INITIALIZER;
+#include "rtpi.h"
+
+static DEFINE_PI_MUTEX(mut, 0);
+static DEFINE_PI_COND(cond, &mut, 0);
 
 static int do_test(void)
 {
-	pthread_mutexattr_t ma;
 	int err;
 	struct timespec ts;
 	struct timeval tv;
-
-	if (pthread_mutexattr_init(&ma) != 0) {
-		puts("mutexattr_init failed");
-		exit(1);
-	}
-
-	if (pthread_mutexattr_settype(&ma, PTHREAD_MUTEX_ERRORCHECK) != 0) {
-		puts("mutexattr_settype failed");
-		exit(1);
-	}
-
-	if (pi_mutex_init(&mut, &ma) != 0) {
-		puts("mutex_init failed");
-		exit(1);
-	}
 
 	/* Get the mutex.  */
 	if (pi_mutex_lock(&mut) != 0) {

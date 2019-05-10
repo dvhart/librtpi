@@ -2,9 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "rtpi.h"
+
 static pthread_barrier_t b;
-static pi_cond_t c = PTHREAD_COND_INITIALIZER;
-static pi_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
+static DEFINE_PI_MUTEX(m, 0);
+static DEFINE_PI_COND(c, &m, 0);
 
 static void cl(void *arg)
 {
