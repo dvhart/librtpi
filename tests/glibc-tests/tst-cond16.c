@@ -24,8 +24,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-pi_cond_t cv = PTHREAD_COND_INITIALIZER;
-pi_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+#include "rtpi.h"
+
+DEFINE_PI_MUTEX(lock, 0);
+DEFINE_PI_COND(cv, &lock, 0);
 bool n, exiting;
 FILE *f;
 enum { count = 8 };		/* Number of worker threads.  */

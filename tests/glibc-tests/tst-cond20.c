@@ -22,11 +22,13 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "rtpi.h"
+
 #define N 10
 #define ROUNDS 1000
-static pi_cond_t cond = PTHREAD_COND_INITIALIZER;
-static pi_cond_t cond2 = PTHREAD_COND_INITIALIZER;
-static pi_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
+static DEFINE_PI_MUTEX(mut, 0);
+static DEFINE_PI_COND(cond, &mut, 0);
+static DEFINE_PI_COND(cond2, &mut, 0);
 static pthread_barrier_t b;
 static int count;
 
@@ -136,7 +138,7 @@ static int do_test(void)
 		}
 
 		count = 0;
-		err = pi_cond_init(&cond, NULL);
+		err = pi_cond_init(&cond, &mut, 0);
 		if (err) {
 			printf("pi_cond_init failed: %s\n", strerror(err));
 			return 1;
