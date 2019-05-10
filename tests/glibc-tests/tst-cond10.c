@@ -22,11 +22,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "rtpi.h"
+
 #define N 10
 #define ROUNDS 100
 
-static pi_cond_t cond = PTHREAD_COND_INITIALIZER;
-static pi_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
+static DEFINE_PI_MUTEX(mut, 0);
+static DEFINE_PI_COND(cond, &mut, 0);
 static pthread_barrier_t bN1;
 static pthread_barrier_t b2;
 
