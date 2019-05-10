@@ -22,65 +22,33 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "rtpi.h"
+
 #if defined _POSIX_CLOCK_SELECTION && _POSIX_CLOCK_SELECTION >= 0
 static int run_test(clockid_t cl)
 {
-	pthread_condattr_t condattr;
 	pi_cond_t cond;
-	pthread_mutexattr_t mutattr;
 	pi_mutex_t mut;
+	uint32_t flags = 0;
 
 	printf("clock = %d\n", (int)cl);
 
-	if (pthread_condattr_init(&condattr) != 0) {
-		puts("condattr_init failed");
+	if (cl == CLOCK_REALTIME) {
+#ifdef RTPI_COND_CLOCK_REALTIME
+		flags = RTPI_COND_CLOCK_REALTIME;
+#else
+		puts("CLOCK_REALTIME not supported");
 		return 1;
+#endif
 	}
 
-	if (pthread_condattr_setclock(&condattr, cl) != 0) {
-		puts("condattr_setclock failed");
-		return 1;
-	}
-
-	clockid_t cl2;
-	if (pthread_condattr_getclock(&condattr, &cl2) != 0) {
-		puts("condattr_getclock failed");
-		return 1;
-	}
-	if (cl != cl2) {
-		printf
-		    ("condattr_getclock returned wrong value: %d, expected %d\n",
-		     (int)cl2, (int)cl);
-		return 1;
-	}
-
-	if (pi_cond_init(&cond, &condattr) != 0) {
-		puts("cond_init failed");
-		return 1;
-	}
-
-	if (pthread_condattr_destroy(&condattr) != 0) {
-		puts("condattr_destroy failed");
-		return 1;
-	}
-
-	if (pthread_mutexattr_init(&mutattr) != 0) {
-		puts("mutexattr_init failed");
-		return 1;
-	}
-
-	if (pthread_mutexattr_settype(&mutattr, PTHREAD_MUTEX_ERRORCHECK) != 0) {
-		puts("mutexattr_settype failed");
-		return 1;
-	}
-
-	if (pi_mutex_init(&mut, &mutattr) != 0) {
+	if (pi_mutex_init(&mut, 0) != 0) {
 		puts("mutex_init failed");
 		return 1;
 	}
 
-	if (pthread_mutexattr_destroy(&mutattr) != 0) {
-		puts("mutexattr_destroy failed");
+	if (pi_cond_init(&cond, &mut, flags) != 0) {
+		puts("cond_init failed");
 		return 1;
 	}
 

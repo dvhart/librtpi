@@ -17,7 +17,6 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <errno.h>
-#include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,6 +24,8 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
+
+#include "rtpi.h"
 
 int *condition;
 
@@ -35,14 +36,11 @@ static int do_test(void)
 	char data[ps];
 	void *mem;
 	int fd;
-	pthread_mutexattr_t ma;
 	pi_mutex_t *mut1;
 	pi_mutex_t *mut2;
-	pthread_condattr_t ca;
 	pi_cond_t *cond;
 	pid_t pid;
 	int result = 0;
-	int p;
 
 	fd = mkstemp(tmpfname);
 	if (fd == -1) {
@@ -80,77 +78,17 @@ static int do_test(void)
 	condition = (int *)(((uintptr_t) (cond + 1) + __alignof(int))
 			    & ~(__alignof(int) - 1));
 
-	if (pthread_mutexattr_init(&ma) != 0) {
-		puts("mutexattr_init failed");
-		return 1;
-	}
-
-	if (pthread_mutexattr_getpshared(&ma, &p) != 0) {
-		puts("1st mutexattr_getpshared failed");
-		return 1;
-	}
-
-	if (p != PTHREAD_PROCESS_PRIVATE) {
-		puts("default pshared value wrong");
-		return 1;
-	}
-
-	if (pthread_mutexattr_setpshared(&ma, PTHREAD_PROCESS_SHARED) != 0) {
-		puts("mutexattr_setpshared failed");
-		return 1;
-	}
-
-	if (pthread_mutexattr_getpshared(&ma, &p) != 0) {
-		puts("2nd mutexattr_getpshared failed");
-		return 1;
-	}
-
-	if (p != PTHREAD_PROCESS_SHARED) {
-		puts("pshared value after setpshared call wrong");
-		return 1;
-	}
-
-	if (pi_mutex_init(mut1, &ma) != 0) {
+	if (pi_mutex_init(mut1, RTPI_MUTEX_PSHARED) != 0) {
 		puts("1st mutex_init failed");
 		return 1;
 	}
 
-	if (pi_mutex_init(mut2, &ma) != 0) {
+	if (pi_mutex_init(mut2, RTPI_MUTEX_PSHARED) != 0) {
 		puts("2nd mutex_init failed");
 		return 1;
 	}
 
-	if (pthread_condattr_init(&ca) != 0) {
-		puts("condattr_init failed");
-		return 1;
-	}
-
-	if (pthread_condattr_getpshared(&ca, &p) != 0) {
-		puts("1st condattr_getpshared failed");
-		return 1;
-	}
-
-	if (p != PTHREAD_PROCESS_PRIVATE) {
-		puts("default value for pshared in condattr wrong");
-		return 1;
-	}
-
-	if (pthread_condattr_setpshared(&ca, PTHREAD_PROCESS_SHARED) != 0) {
-		puts("condattr_setpshared failed");
-		return 1;
-	}
-
-	if (pthread_condattr_getpshared(&ca, &p) != 0) {
-		puts("2nd condattr_getpshared failed");
-		return 1;
-	}
-
-	if (p != PTHREAD_PROCESS_SHARED) {
-		puts("pshared condattr still not set");
-		return 1;
-	}
-
-	if (pi_cond_init(cond, &ca) != 0) {
+	if (pi_cond_init(cond, mut2, RTPI_COND_PSHARED) != 0) {
 		puts("cond_init failed");
 		return 1;
 	}
