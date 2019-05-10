@@ -173,5 +173,4 @@ static int do_test(void)
 #endif
 }
 
-#define TEST_FUNCTION do_test ()
-#include "../test-skeleton.c"
+#include "test-driver.c"

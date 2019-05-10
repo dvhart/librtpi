@@ -23,9 +23,7 @@
 #include <unistd.h>
 
 static int do_test(void);
-
-#define TEST_FUNCTION do_test ()
-#include "../test-skeleton.c"
+#include "test-driver.c"
 
 /* Note that this test requires more than the standard.  It is
    required that there are no spurious wakeups if only more readers

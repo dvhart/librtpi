@@ -270,4 +270,5 @@ int do_test(int argc, char **argv)
 	return do_test_wait(timed_waiter);
 }
 
-#include "../test-skeleton.c"
+#define TEST_FUNCTION_ARGV do_test
+#include "test-driver.c"

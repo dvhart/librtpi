@@ -168,3 +168,7 @@ static int do_test(void)
 
 	return 0;
 }
+
+#define PREPARE prepare
+#define CLEANUP_HANDLER cleanup
+#include "test-driver.c"
