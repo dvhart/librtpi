@@ -48,7 +48,12 @@ static void *tf(void *arg)
 	}
 
 	/* This call should never return.  */
-	xpi_cond_wait(&cond);
+	err = pi_cond_wait(&cond);
+	if (err != 0) {
+		printf("child %d pi_cond_wait failed to wait: %s\n",
+		       i, strerror(err));
+		exit(1);
+	}
 	puts("error: pi_cond_wait in tf returned");
 
 	/* We should never get here.  */
@@ -92,7 +97,11 @@ static int do_test(void)
 	delayed_exit(1);
 
 	/* This call should never return.  */
-	xpi_cond_wait(&cond);
+	err = pi_cond_wait(&cond);
+	if (err != 0) {
+		puts("error: pi_cond_wait in do_test failed to wait");
+		return 1;
+	}
 
 	puts("error: pi_cond_wait in do_test returned");
 	return 1;
