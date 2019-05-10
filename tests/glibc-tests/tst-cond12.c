@@ -17,13 +17,14 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include <errno.h>
-#include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
+
+#include "rtpi.h"
 
 static char fname[] = "/tmp/tst-cond12-XXXXXX";
 static int fd;
@@ -63,39 +64,13 @@ static int do_test(void)
 		return 1;
 	}
 
-	pthread_mutexattr_t ma;
-	if (pthread_mutexattr_init(&ma) != 0) {
-		puts("mutexattr_init failed");
-		return 1;
-	}
-	if (pthread_mutexattr_setpshared(&ma, 1) != 0) {
-		puts("mutexattr_setpshared failed");
-		return 1;
-	}
-	if (pi_mutex_init(&p->m, &ma) != 0) {
+	if (pi_mutex_init(&p->m, RTPI_MUTEX_PSHARED) != 0) {
 		puts("mutex_init failed");
-		return 1;
-	}
-	if (pthread_mutexattr_destroy(&ma) != 0) {
-		puts("mutexattr_destroy failed");
 		return 1;
 	}
 
-	pthread_condattr_t ca;
-	if (pthread_condattr_init(&ca) != 0) {
-		puts("condattr_init failed");
-		return 1;
-	}
-	if (pthread_condattr_setpshared(&ca, 1) != 0) {
-		puts("condattr_setpshared failed");
-		return 1;
-	}
-	if (pi_cond_init(&p->c, &ca) != 0) {
+	if (pi_cond_init(&p->c, &p->m, RTPI_COND_PSHARED) != 0) {
 		puts("mutex_init failed");
-		return 1;
-	}
-	if (pthread_condattr_destroy(&ca) != 0) {
-		puts("condattr_destroy failed");
 		return 1;
 	}
 

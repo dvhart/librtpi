@@ -27,11 +27,12 @@
 #include <sys/time.h>
 #include <time.h>
 
+#include "rtpi.h"
+
 #define THREADS_NUM 5
 #define MAXITER 50000
 
 static pi_mutex_t mutex;
-static pthread_mutexattr_t mutex_attr;
 static pi_cond_t cond;
 static pthread_t threads[THREADS_NUM];
 static int pending = 0;
@@ -139,26 +140,13 @@ static int do_test_wait(threadfunc f)
 
 	puts("Starting test");
 
-	rv = pthread_mutexattr_init(&mutex_attr);
-	if (rv) {
-		printf("pthread_mutexattr_init: %s(%d)\n", strerror(rv), rv);
-		return 1;
-	}
-
-	rv = pthread_mutexattr_setprotocol(&mutex_attr, PTHREAD_PRIO_INHERIT);
-	if (rv) {
-		printf("pthread_mutexattr_setprotocol: %s(%d)\n", strerror(rv),
-		       rv);
-		return 1;
-	}
-
-	rv = pi_mutex_init(&mutex, &mutex_attr);
+	rv = pi_mutex_init(&mutex, 0);
 	if (rv) {
 		printf("pi_mutex_init: %s(%d)\n", strerror(rv), rv);
 		return 1;
 	}
 
-	rv = pi_cond_init(&cond, NULL);
+	rv = pi_cond_init(&cond, &mutex, 0);
 	if (rv) {
 		printf("pi_cond_init: %s(%d)\n", strerror(rv), rv);
 		return 1;
