@@ -23,7 +23,7 @@ static inline __u32 get_op(__u32 op, __u32 mod)
  * @val3:	varies by op
  */
 static inline int sys_futex(__u32 *uaddr, int op, __u32 val,
-			    const struct timespec *restrict utime,
+			    const struct timespec *utime,
 			    __u32 *uaddr2, __u32 val3)
 {
 	return syscall(SYS_futex, uaddr, op, val, utime, uaddr2, val3);
@@ -65,7 +65,7 @@ static inline int futex_unlock_pi(pi_mutex_t *mutex)
  * @mutex: PI mutex containing PI futex target
  */
 static inline int futex_wait_requeue_pi(pi_cond_t *cond, __u32 val,
-					const struct timespec *restrict utime,
+					const struct timespec *utime,
 					pi_mutex_t *mutex)
 {
 	return sys_futex(&cond->cond,
