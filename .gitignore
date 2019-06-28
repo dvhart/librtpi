@@ -1,0 +1,46 @@
+# patch related files
+*.diff
+*.patch
+*.orig
+*.rej
+
+# temporary and backup files
+*~
+.#*
+*#
+
+# intermediate build files
+*.la
+*.lo
+*.o
+*.a
+*.in
+*.sub
+*.cache
+*.trs
+*.log
+
+# autotools generated files
+.deps
+.libs
+/m4
+aclocal.m4
+ar-lib
+compile
+configure
+config.*
+depcomp
+install-sh
+libtool
+ltmain.sh
+missing
+stamp-h1
+test-driver
+
+# tag files
+TAGS
+tags
+
+# cscope files
+cscope.*
+ncscope.*
