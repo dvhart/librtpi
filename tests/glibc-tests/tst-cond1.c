@@ -21,24 +21,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
+static pi_cond_t cond = PTHREAD_COND_INITIALIZER;
+static pi_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 
 static void *tf(void *p)
 {
 	int err;
 
-	err = pthread_mutex_lock(&mut);
+	err = pi_mutex_lock(&mut);
 	if (err != 0)
 		error(EXIT_FAILURE, err, "child: cannot get mutex");
 
 	puts("child: got mutex; signalling");
 
-	pthread_cond_signal(&cond);
+	pi_cond_signal(&cond);
 
 	puts("child: unlock");
 
-	err = pthread_mutex_unlock(&mut);
+	err = pi_mutex_unlock(&mut);
 	if (err != 0)
 		error(EXIT_FAILURE, err, "child: cannot unlock");
 
@@ -56,7 +56,7 @@ static int do_test(void)
 
 	puts("parent: get mutex");
 
-	err = pthread_mutex_lock(&mut);
+	err = pi_mutex_lock(&mut);
 	if (err != 0)
 		error(EXIT_FAILURE, err, "parent: cannot get mutex");
 
@@ -71,7 +71,7 @@ static int do_test(void)
 	/* This test will fail on spurious wake-ups, which are allowed; however,
 	   the current implementation shouldn't produce spurious wake-ups in the
 	   scenario we are testing here.  */
-	err = pthread_cond_wait(&cond, &mut);
+	err = pi_cond_wait(&cond);
 	if (err != 0)
 		error(EXIT_FAILURE, err, "parent: cannot wait fir signal");
 

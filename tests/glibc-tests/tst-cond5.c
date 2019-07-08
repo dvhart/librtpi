@@ -24,8 +24,8 @@
 #include <time.h>
 #include <sys/time.h>
 
-static pthread_mutex_t mut;
-static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+static pi_mutex_t mut;
+static pi_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 static int do_test(void)
 {
@@ -44,13 +44,13 @@ static int do_test(void)
 		exit(1);
 	}
 
-	if (pthread_mutex_init(&mut, &ma) != 0) {
+	if (pi_mutex_init(&mut, &ma) != 0) {
 		puts("mutex_init failed");
 		exit(1);
 	}
 
 	/* Get the mutex.  */
-	if (pthread_mutex_lock(&mut) != 0) {
+	if (pi_mutex_lock(&mut) != 0) {
 		puts("mutex_lock failed");
 		exit(1);
 	}
@@ -67,7 +67,7 @@ static int do_test(void)
 		ts.tv_nsec -= 1000000000;
 		++ts.tv_sec;
 	}
-	err = pthread_cond_timedwait(&cond, &mut, &ts);
+	err = pi_cond_timedwait(&cond, &ts);
 	if (err == 0) {
 		/* This could in theory happen but here without any signal and
 		   additional waiter it should not.  */
@@ -78,7 +78,7 @@ static int do_test(void)
 		exit(1);
 	}
 
-	err = pthread_mutex_unlock(&mut);
+	err = pi_mutex_unlock(&mut);
 	if (err != 0) {
 		printf("mutex_unlock failed: %s\n", strerror(err));
 		exit(1);

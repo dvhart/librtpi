@@ -1,4 +1,4 @@
-/* Verify that exception table for pthread_cond_wait is correct.
+/* Verify that exception table for pi_cond_wait is correct.
    Copyright (C) 2012-2019 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
@@ -22,8 +22,8 @@
 #include <string.h>
 #include <unistd.h>
 
-pthread_mutex_t mutex;
-pthread_cond_t cond;
+pi_mutex_t mutex;
+pi_cond_t cond;
 
 #define CHECK_RETURN_VAL_OR_FAIL(ret,str) \
   ({ if ((ret) != 0) \
@@ -37,7 +37,7 @@ pthread_cond_t cond;
 void clean(void *arg)
 {
 	puts("clean: Unlocking mutex...");
-	pthread_mutex_unlock((pthread_mutex_t *) arg);
+	pi_mutex_unlock((pi_mutex_t *) arg);
 	puts("clean: Mutex unlocked...");
 }
 
@@ -51,20 +51,20 @@ void *thr(void *arg)
 	ret = pthread_mutexattr_setprotocol(&mutexAttr, PTHREAD_PRIO_INHERIT);
 	CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_mutexattr_setprotocol");
 
-	ret = pthread_mutex_init(&mutex, &mutexAttr);
-	CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_mutex_init");
+	ret = pi_mutex_init(&mutex, &mutexAttr);
+	CHECK_RETURN_VAL_OR_FAIL(ret, "pi_mutex_init");
 
-	ret = pthread_cond_init(&cond, 0);
-	CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_cond_init");
+	ret = pi_cond_init(&cond, 0);
+	CHECK_RETURN_VAL_OR_FAIL(ret, "pi_cond_init");
 
 	puts("th: Init done, entering wait...");
 
 	pthread_cleanup_push(clean, (void *)&mutex);
-	ret = pthread_mutex_lock(&mutex);
-	CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_mutex_lock");
+	ret = pi_mutex_lock(&mutex);
+	CHECK_RETURN_VAL_OR_FAIL(ret, "pi_mutex_lock");
 	while (1) {
-		ret = pthread_cond_wait(&cond, &mutex);
-		CHECK_RETURN_VAL_OR_FAIL(ret, "pthread_cond_wait");
+		ret = pi_cond_wait(&cond);
+		CHECK_RETURN_VAL_OR_FAIL(ret, "pi_cond_wait");
 	}
 	pthread_cleanup_pop(1);
 

@@ -22,8 +22,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
+static pi_cond_t cond = PTHREAD_COND_INITIALIZER;
+static pi_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 
 static int do_test(void)
 {
@@ -37,7 +37,7 @@ static int do_test(void)
 
 	ts.tv_nsec = -1;
 
-	int e = pthread_cond_timedwait(&cond, &mut, &ts);
+	int e = pi_cond_timedwait(&cond, &ts);
 	if (e == 0) {
 		puts("first cond_timedwait did not fail");
 		result = 1;
@@ -48,7 +48,7 @@ static int do_test(void)
 
 	ts.tv_nsec = 2000000000;
 
-	e = pthread_cond_timedwait(&cond, &mut, &ts);
+	e = pi_cond_timedwait(&cond, &ts);
 	if (e == 0) {
 		puts("second cond_timedwait did not fail");
 		result = 1;

@@ -3,17 +3,17 @@
 #include <stdlib.h>
 
 static pthread_barrier_t b;
-static pthread_cond_t c = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
+static pi_cond_t c = PTHREAD_COND_INITIALIZER;
+static pi_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 
 static void cl(void *arg)
 {
-	pthread_mutex_unlock(&m);
+	pi_mutex_unlock(&m);
 }
 
 static void *tf(void *arg)
 {
-	if (pthread_mutex_lock(&m) != 0) {
+	if (pi_mutex_lock(&m) != 0) {
 		printf("%s: mutex_lock failed\n", __func__);
 		exit(1);
 	}
@@ -28,13 +28,13 @@ static void *tf(void *arg)
 	   on the mutex.  In this case the beginning of the second cond_wait
 	   call will cause the cancellation to happen.  */
 	do
-		if (pthread_cond_wait(&c, &m) != 0) {
+		if (pi_cond_wait(&c) != 0) {
 			printf("%s: cond_wait failed\n", __func__);
 			exit(1);
 		}
 	while (arg == NULL) ;
 	pthread_cleanup_pop(0);
-	if (pthread_mutex_unlock(&m) != 0) {
+	if (pi_mutex_unlock(&m) != 0) {
 		printf("%s: mutex_unlock failed\n", __func__);
 		exit(1);
 	}
@@ -60,11 +60,11 @@ static int do_test(void)
 		puts("1st barrier_wait failed");
 		return 1;
 	}
-	if (pthread_mutex_lock(&m) != 0) {
+	if (pi_mutex_lock(&m) != 0) {
 		puts("1st mutex_lock failed");
 		return 1;
 	}
-	if (pthread_cond_signal(&c) != 0) {
+	if (pi_cond_signal(&c) != 0) {
 		puts("1st cond_signal failed");
 		return 1;
 	}
@@ -72,7 +72,7 @@ static int do_test(void)
 		puts("cancel failed");
 		return 1;
 	}
-	if (pthread_mutex_unlock(&m) != 0) {
+	if (pi_mutex_unlock(&m) != 0) {
 		puts("1st mutex_unlock failed");
 		return 1;
 	}
@@ -102,15 +102,15 @@ static int do_test(void)
 		puts("2nd barrier_wait failed");
 		return 1;
 	}
-	if (pthread_mutex_lock(&m) != 0) {
+	if (pi_mutex_lock(&m) != 0) {
 		puts("2nd mutex_lock failed");
 		return 1;
 	}
-	if (pthread_cond_signal(&c) != 0) {
+	if (pi_cond_signal(&c) != 0) {
 		puts("2nd cond_signal failed");
 		return 1;
 	}
-	if (pthread_mutex_unlock(&m) != 0) {
+	if (pi_mutex_unlock(&m) != 0) {
 		puts("2nd mutex_unlock failed");
 		return 1;
 	}

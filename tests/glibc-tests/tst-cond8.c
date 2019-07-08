@@ -23,14 +23,14 @@
 #include <time.h>
 #include <sys/time.h>
 
-static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t mut = PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP;
+static pi_cond_t cond = PTHREAD_COND_INITIALIZER;
+static pi_mutex_t mut = PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP;
 
 static pthread_barrier_t bar;
 
 static void ch(void *arg)
 {
-	int e = pthread_mutex_lock(&mut);
+	int e = pi_mutex_lock(&mut);
 	if (e == 0) {
 		puts("mutex not locked at all by cond_wait");
 		exit(1);
@@ -41,7 +41,7 @@ static void ch(void *arg)
 		exit(1);
 	}
 
-	if (pthread_mutex_unlock(&mut) != 0) {
+	if (pi_mutex_unlock(&mut) != 0) {
 		puts("ch: cannot unlock mutex");
 		exit(1);
 	}
@@ -59,7 +59,7 @@ static void *tf1(void *p)
 		exit(1);
 	}
 
-	err = pthread_mutex_lock(&mut);
+	err = pi_mutex_lock(&mut);
 	if (err != 0) {
 		puts("child: cannot get mutex");
 		exit(1);
@@ -75,7 +75,7 @@ static void *tf1(void *p)
 
 	pthread_cleanup_push(ch, NULL);
 
-	pthread_cond_wait(&cond, &mut);
+	pi_cond_wait(&cond);
 
 	pthread_cleanup_pop(0);
 
@@ -94,7 +94,7 @@ static void *tf2(void *p)
 		exit(1);
 	}
 
-	err = pthread_mutex_lock(&mut);
+	err = pi_mutex_lock(&mut);
 	if (err != 0) {
 		puts("child: cannot get mutex");
 		exit(1);
@@ -118,7 +118,7 @@ static void *tf2(void *p)
 	TIMEVAL_TO_TIMESPEC(&tv, &ts);
 	ts.tv_sec += 1000;
 
-	pthread_cond_timedwait(&cond, &mut, &ts);
+	pi_cond_timedwait(&cond, &ts);
 
 	pthread_cleanup_pop(0);
 
@@ -158,13 +158,13 @@ static int do_test(void)
 		exit(1);
 	}
 
-	err = pthread_mutex_lock(&mut);
+	err = pi_mutex_lock(&mut);
 	if (err != 0) {
 		puts("parent: mutex_lock failed");
 		exit(1);
 	}
 
-	err = pthread_mutex_unlock(&mut);
+	err = pi_mutex_unlock(&mut);
 	if (err != 0) {
 		puts("parent: mutex_unlock failed");
 		exit(1);
@@ -203,13 +203,13 @@ static int do_test(void)
 		exit(1);
 	}
 
-	err = pthread_mutex_lock(&mut);
+	err = pi_mutex_lock(&mut);
 	if (err != 0) {
 		puts("parent: mutex_lock failed");
 		exit(1);
 	}
 
-	err = pthread_mutex_unlock(&mut);
+	err = pi_mutex_unlock(&mut);
 	if (err != 0) {
 		puts("parent: mutex_unlock failed");
 		exit(1);

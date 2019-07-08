@@ -30,9 +30,9 @@
 #define THREADS_NUM 5
 #define MAXITER 50000
 
-static pthread_mutex_t mutex;
+static pi_mutex_t mutex;
 static pthread_mutexattr_t mutex_attr;
-static pthread_cond_t cond;
+static pi_cond_t cond;
 static pthread_t threads[THREADS_NUM];
 static int pending = 0;
 
@@ -46,9 +46,9 @@ void *thread_fun_timed(void *arg)
 	printf("Started thread_fun_timed[%d]\n", *ret);
 
 	for (i = 0; i < MAXITER / THREADS_NUM; i++) {
-		rv = pthread_mutex_lock(&mutex);
+		rv = pi_mutex_lock(&mutex);
 		if (rv) {
-			printf("pthread_mutex_lock: %s(%d)\n", strerror(rv),
+			printf("pi_mutex_lock: %s(%d)\n", strerror(rv),
 			       rv);
 			*ret = 1;
 			goto out;
@@ -58,11 +58,11 @@ void *thread_fun_timed(void *arg)
 			struct timespec ts;
 			clock_gettime(CLOCK_REALTIME, &ts);
 			ts.tv_sec += 20;
-			rv = pthread_cond_timedwait(&cond, &mutex, &ts);
+			rv = pi_cond_timedwait(&cond, &ts);
 
 			/* There should be no timeout either.  */
 			if (rv) {
-				printf("pthread_cond_wait: %s(%d)\n",
+				printf("pi_cond_wait: %s(%d)\n",
 				       strerror(rv), rv);
 				*ret = 1;
 				goto out;
@@ -71,9 +71,9 @@ void *thread_fun_timed(void *arg)
 
 		pending--;
 
-		rv = pthread_mutex_unlock(&mutex);
+		rv = pi_mutex_unlock(&mutex);
 		if (rv) {
-			printf("pthread_mutex_unlock: %s(%d)\n", strerror(rv),
+			printf("pi_mutex_unlock: %s(%d)\n", strerror(rv),
 			       rv);
 			*ret = 1;
 			goto out;
@@ -94,19 +94,19 @@ void *thread_fun(void *arg)
 	printf("Started thread_fun[%d]\n", *ret);
 
 	for (i = 0; i < MAXITER / THREADS_NUM; i++) {
-		rv = pthread_mutex_lock(&mutex);
+		rv = pi_mutex_lock(&mutex);
 		if (rv) {
-			printf("pthread_mutex_lock: %s(%d)\n", strerror(rv),
+			printf("pi_mutex_lock: %s(%d)\n", strerror(rv),
 			       rv);
 			*ret = 1;
 			goto out;
 		}
 
 		while (!pending) {
-			rv = pthread_cond_wait(&cond, &mutex);
+			rv = pi_cond_wait(&cond);
 
 			if (rv) {
-				printf("pthread_cond_wait: %s(%d)\n",
+				printf("pi_cond_wait: %s(%d)\n",
 				       strerror(rv), rv);
 				*ret = 1;
 				goto out;
@@ -115,9 +115,9 @@ void *thread_fun(void *arg)
 
 		pending--;
 
-		rv = pthread_mutex_unlock(&mutex);
+		rv = pi_mutex_unlock(&mutex);
 		if (rv) {
-			printf("pthread_mutex_unlock: %s(%d)\n", strerror(rv),
+			printf("pi_mutex_unlock: %s(%d)\n", strerror(rv),
 			       rv);
 			*ret = 1;
 			goto out;
@@ -152,15 +152,15 @@ static int do_test_wait(threadfunc f)
 		return 1;
 	}
 
-	rv = pthread_mutex_init(&mutex, &mutex_attr);
+	rv = pi_mutex_init(&mutex, &mutex_attr);
 	if (rv) {
-		printf("pthread_mutex_init: %s(%d)\n", strerror(rv), rv);
+		printf("pi_mutex_init: %s(%d)\n", strerror(rv), rv);
 		return 1;
 	}
 
-	rv = pthread_cond_init(&cond, NULL);
+	rv = pi_cond_init(&cond, NULL);
 	if (rv) {
-		printf("pthread_cond_init: %s(%d)\n", strerror(rv), rv);
+		printf("pi_cond_init: %s(%d)\n", strerror(rv), rv);
 		return 1;
 	}
 
@@ -174,9 +174,9 @@ static int do_test_wait(threadfunc f)
 	}
 
 	for (; counter < MAXITER; counter++) {
-		rv = pthread_mutex_lock(&mutex);
+		rv = pi_mutex_lock(&mutex);
 		if (rv) {
-			printf("pthread_mutex_lock: %s(%d)\n", strerror(rv),
+			printf("pi_mutex_lock: %s(%d)\n", strerror(rv),
 			       rv);
 			return 1;
 		}
@@ -185,16 +185,16 @@ static int do_test_wait(threadfunc f)
 			printf("counter: %d\n", counter);
 		pending += 1;
 
-		rv = pthread_cond_signal(&cond);
+		rv = pi_cond_signal(&cond);
 		if (rv) {
-			printf("pthread_cond_signal: %s(%d)\n", strerror(rv),
+			printf("pi_cond_signal: %s(%d)\n", strerror(rv),
 			       rv);
 			return 1;
 		}
 
-		rv = pthread_mutex_unlock(&mutex);
+		rv = pi_mutex_unlock(&mutex);
 		if (rv) {
-			printf("pthread_mutex_unlock: %s(%d)\n", strerror(rv),
+			printf("pi_mutex_unlock: %s(%d)\n", strerror(rv),
 			       rv);
 			return 1;
 		}
@@ -218,12 +218,12 @@ static int do_test_wait(threadfunc f)
 
 static int do_test(void)
 {
-	puts("Testing pthread_cond_wait");
+	puts("Testing pi_cond_wait");
 	int ret = do_test_wait(thread_fun);
 	if (ret)
 		return ret;
 
-	puts("Testing pthread_cond_timedwait");
+	puts("Testing pi_cond_timedwait");
 	return do_test_wait(thread_fun_timed);
 }
 

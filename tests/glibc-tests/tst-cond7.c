@@ -26,8 +26,8 @@
 #include <sys/time.h>
 
 typedef struct {
-	pthread_cond_t cond;
-	pthread_mutex_t lock;
+	pi_cond_t cond;
+	pi_mutex_t lock;
 	pthread_t h;
 } T;
 
@@ -45,24 +45,24 @@ static void *tf(void *arg)
 
 	T *t = (T *) arg;
 
-	if (pthread_mutex_lock(&t->lock) != 0) {
+	if (pi_mutex_lock(&t->lock) != 0) {
 		puts("child: lock failed");
 		exit(1);
 	}
 
 	done = true;
 
-	if (pthread_cond_signal(&t->cond) != 0) {
+	if (pi_cond_signal(&t->cond) != 0) {
 		puts("child: cond_signal failed");
 		exit(1);
 	}
 
-	if (pthread_cond_wait(&t->cond, &t->lock) != 0) {
+	if (pi_cond_wait(&t->cond) != 0) {
 		puts("child: cond_wait failed");
 		exit(1);
 	}
 
-	if (pthread_mutex_unlock(&t->lock) != 0) {
+	if (pi_mutex_unlock(&t->lock) != 0) {
 		puts("child: unlock failed");
 		exit(1);
 	}
@@ -84,13 +84,13 @@ static int do_test(void)
 			exit(1);
 		}
 
-		if (pthread_mutex_init(&t[i]->lock, NULL) != 0
-		    || pthread_cond_init(&t[i]->cond, NULL) != 0) {
+		if (pi_mutex_init(&t[i]->lock, NULL) != 0
+		    || pi_cond_init(&t[i]->cond, NULL) != 0) {
 			puts("an _init function failed");
 			exit(1);
 		}
 
-		if (pthread_mutex_lock(&t[i]->lock) != 0) {
+		if (pi_mutex_lock(&t[i]->lock) != 0) {
 			puts("initial mutex_lock failed");
 			exit(1);
 		}
@@ -103,14 +103,14 @@ static int do_test(void)
 		}
 
 		do
-			if (pthread_cond_wait(&t[i]->cond, &t[i]->lock) != 0) {
+			if (pi_cond_wait(&t[i]->cond) != 0) {
 				puts("cond_wait failed");
 				exit(1);
 			}
 		while (!done) ;
 
 		/* Release the lock since the cancel handler will get it.  */
-		if (pthread_mutex_unlock(&t[i]->lock) != 0) {
+		if (pi_mutex_unlock(&t[i]->lock) != 0) {
 			puts("mutex_unlock failed");
 			exit(1);
 		}

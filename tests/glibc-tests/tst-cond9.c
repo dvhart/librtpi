@@ -23,12 +23,12 @@
 #include <time.h>
 #include <sys/time.h>
 
-static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t mut = PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP;
+static pi_cond_t cond = PTHREAD_COND_INITIALIZER;
+static pi_mutex_t mut = PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP;
 
 static void *tf(void *arg)
 {
-	int err = pthread_cond_wait(&cond, &mut);
+	int err = pi_cond_wait(&cond);
 	if (err == 0) {
 		puts("cond_wait did not fail");
 		exit(1);
@@ -47,7 +47,7 @@ static void *tf(void *arg)
 	TIMEVAL_TO_TIMESPEC(&tv, &ts);
 	ts.tv_sec += 1000;
 
-	err = pthread_cond_timedwait(&cond, &mut, &ts);
+	err = pi_cond_timedwait(&cond, &ts);
 	if (err == 0) {
 		puts("cond_timedwait did not fail");
 		exit(1);
@@ -68,7 +68,7 @@ static int do_test(void)
 
 	printf("&cond = %p\n&mut = %p\n", &cond, &mut);
 
-	err = pthread_cond_wait(&cond, &mut);
+	err = pi_cond_wait(&cond);
 	if (err == 0) {
 		puts("cond_wait did not fail");
 		exit(1);
@@ -87,7 +87,7 @@ static int do_test(void)
 	TIMEVAL_TO_TIMESPEC(&tv, &ts);
 	ts.tv_sec += 1000;
 
-	err = pthread_cond_timedwait(&cond, &mut, &ts);
+	err = pi_cond_timedwait(&cond, &ts);
 	if (err == 0) {
 		puts("cond_timedwait did not fail");
 		exit(1);
@@ -98,7 +98,7 @@ static int do_test(void)
 		exit(1);
 	}
 
-	if (pthread_mutex_lock(&mut) != 0) {
+	if (pi_mutex_lock(&mut) != 0) {
 		puts("parent: mutex_lock failed");
 		exit(1);
 	}
