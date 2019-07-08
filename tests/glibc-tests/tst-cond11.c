@@ -26,9 +26,9 @@
 static int run_test(clockid_t cl)
 {
 	pthread_condattr_t condattr;
-	pthread_cond_t cond;
+	pi_cond_t cond;
 	pthread_mutexattr_t mutattr;
-	pthread_mutex_t mut;
+	pi_mutex_t mut;
 
 	printf("clock = %d\n", (int)cl);
 
@@ -54,7 +54,7 @@ static int run_test(clockid_t cl)
 		return 1;
 	}
 
-	if (pthread_cond_init(&cond, &condattr) != 0) {
+	if (pi_cond_init(&cond, &condattr) != 0) {
 		puts("cond_init failed");
 		return 1;
 	}
@@ -74,7 +74,7 @@ static int run_test(clockid_t cl)
 		return 1;
 	}
 
-	if (pthread_mutex_init(&mut, &mutattr) != 0) {
+	if (pi_mutex_init(&mut, &mutattr) != 0) {
 		puts("mutex_init failed");
 		return 1;
 	}
@@ -84,12 +84,12 @@ static int run_test(clockid_t cl)
 		return 1;
 	}
 
-	if (pthread_mutex_lock(&mut) != 0) {
+	if (pi_mutex_lock(&mut) != 0) {
 		puts("mutex_lock failed");
 		return 1;
 	}
 
-	if (pthread_mutex_lock(&mut) != EDEADLK) {
+	if (pi_mutex_lock(&mut) != EDEADLK) {
 		puts("2nd mutex_lock did not return EDEADLK");
 		return 1;
 	}
@@ -103,7 +103,7 @@ static int run_test(clockid_t cl)
 	/* Wait one second.  */
 	++ts.tv_sec;
 
-	int e = pthread_cond_timedwait(&cond, &mut, &ts);
+	int e = pi_cond_timedwait(&cond, &ts);
 	if (e == 0) {
 		puts("cond_timedwait succeeded");
 		return 1;
@@ -124,17 +124,17 @@ static int run_test(clockid_t cl)
 		return 1;
 	}
 
-	if (pthread_mutex_unlock(&mut) != 0) {
+	if (pi_mutex_unlock(&mut) != 0) {
 		puts("mutex_unlock failed");
 		return 1;
 	}
 
-	if (pthread_mutex_destroy(&mut) != 0) {
+	if (pi_mutex_destroy(&mut) != 0) {
 		puts("mutex_destroy failed");
 		return 1;
 	}
 
-	if (pthread_cond_destroy(&cond) != 0) {
+	if (pi_cond_destroy(&cond) != 0) {
 		puts("cond_destroy failed");
 		return 1;
 	}

@@ -24,8 +24,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-pthread_cond_t cv = PTHREAD_COND_INITIALIZER;
-pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+pi_cond_t cv = PTHREAD_COND_INITIALIZER;
+pi_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 bool n, exiting;
 FILE *f;
 enum { count = 8 };		/* Number of worker threads.  */
@@ -35,24 +35,24 @@ void *tf(void *dummy)
 	bool loop = true;
 
 	while (loop) {
-		pthread_mutex_lock(&lock);
+		pi_mutex_lock(&lock);
 		while (n && !exiting)
-			pthread_cond_wait(&cv, &lock);
+			pi_cond_wait(&cv);
 		n = true;
-		pthread_mutex_unlock(&lock);
+		pi_mutex_unlock(&lock);
 
 		fputs(".", f);
 
-		pthread_mutex_lock(&lock);
+		pi_mutex_lock(&lock);
 		n = false;
 		if (exiting)
 			loop = false;
 #ifdef UNLOCK_AFTER_BROADCAST
-		pthread_cond_broadcast(&cv);
-		pthread_mutex_unlock(&lock);
+		pi_cond_broadcast(&cv);
+		pi_mutex_unlock(&lock);
 #else
-		pthread_mutex_unlock(&lock);
-		pthread_cond_broadcast(&cv);
+		pi_mutex_unlock(&lock);
+		pi_cond_broadcast(&cv);
 #endif
 	}
 
@@ -85,9 +85,9 @@ int do_test(void)
 	struct timespec ts = {.tv_sec = 20,.tv_nsec = 0 };
 	while (nanosleep(&ts, &ts) != 0) ;
 
-	pthread_mutex_lock(&lock);
+	pi_mutex_lock(&lock);
 	exiting = true;
-	pthread_mutex_unlock(&lock);
+	pi_mutex_unlock(&lock);
 
 	for (i = 0; i < count; ++i)
 		pthread_join(th[i], NULL);

@@ -36,10 +36,10 @@ static int do_test(void)
 	void *mem;
 	int fd;
 	pthread_mutexattr_t ma;
-	pthread_mutex_t *mut1;
-	pthread_mutex_t *mut2;
+	pi_mutex_t *mut1;
+	pi_mutex_t *mut2;
 	pthread_condattr_t ca;
-	pthread_cond_t *cond;
+	pi_cond_t *cond;
 	pid_t pid;
 	int result = 0;
 	int p;
@@ -68,14 +68,14 @@ static int do_test(void)
 		return 1;
 	}
 
-	mut1 = (pthread_mutex_t *) (((uintptr_t) mem
-				     + __alignof(pthread_mutex_t))
-				    & ~(__alignof(pthread_mutex_t) - 1));
+	mut1 = (pi_mutex_t *) (((uintptr_t) mem
+				     + __alignof(pi_mutex_t))
+				    & ~(__alignof(pi_mutex_t) - 1));
 	mut2 = mut1 + 1;
 
-	cond = (pthread_cond_t *) (((uintptr_t) (mut2 + 1)
-				    + __alignof(pthread_cond_t))
-				   & ~(__alignof(pthread_cond_t) - 1));
+	cond = (pi_cond_t *) (((uintptr_t) (mut2 + 1)
+				    + __alignof(pi_cond_t))
+				   & ~(__alignof(pi_cond_t) - 1));
 
 	condition = (int *)(((uintptr_t) (cond + 1) + __alignof(int))
 			    & ~(__alignof(int) - 1));
@@ -110,12 +110,12 @@ static int do_test(void)
 		return 1;
 	}
 
-	if (pthread_mutex_init(mut1, &ma) != 0) {
+	if (pi_mutex_init(mut1, &ma) != 0) {
 		puts("1st mutex_init failed");
 		return 1;
 	}
 
-	if (pthread_mutex_init(mut2, &ma) != 0) {
+	if (pi_mutex_init(mut2, &ma) != 0) {
 		puts("2nd mutex_init failed");
 		return 1;
 	}
@@ -150,12 +150,12 @@ static int do_test(void)
 		return 1;
 	}
 
-	if (pthread_cond_init(cond, &ca) != 0) {
+	if (pi_cond_init(cond, &ca) != 0) {
 		puts("cond_init failed");
 		return 1;
 	}
 
-	if (pthread_mutex_lock(mut1) != 0) {
+	if (pi_mutex_lock(mut1) != 0) {
 		puts("parent: 1st mutex_lock failed");
 		return 1;
 	}
@@ -166,24 +166,24 @@ static int do_test(void)
 		puts("fork failed");
 		return 1;
 	} else if (pid == 0) {
-		if (pthread_mutex_lock(mut2) != 0) {
+		if (pi_mutex_lock(mut2) != 0) {
 			puts("child: mutex_lock failed");
 			return 1;
 		}
 
-		if (pthread_mutex_unlock(mut1) != 0) {
+		if (pi_mutex_unlock(mut1) != 0) {
 			puts("child: 1st mutex_unlock failed");
 			return 1;
 		}
 
 		do
-			if (pthread_cond_wait(cond, mut2) != 0) {
+			if (pi_cond_wait(cond) != 0) {
 				puts("child: cond_wait failed");
 				return 1;
 			}
 		while (*condition == 0) ;
 
-		if (pthread_mutex_unlock(mut2) != 0) {
+		if (pi_mutex_unlock(mut2) != 0) {
 			puts("child: 2nd mutex_unlock failed");
 			return 1;
 		}
@@ -192,24 +192,24 @@ static int do_test(void)
 	} else {
 		int status;
 
-		if (pthread_mutex_lock(mut1) != 0) {
+		if (pi_mutex_lock(mut1) != 0) {
 			puts("parent: 2nd mutex_lock failed");
 			return 1;
 		}
 
-		if (pthread_mutex_lock(mut2) != 0) {
+		if (pi_mutex_lock(mut2) != 0) {
 			puts("parent: 3rd mutex_lock failed");
 			return 1;
 		}
 
-		if (pthread_cond_signal(cond) != 0) {
+		if (pi_cond_signal(cond) != 0) {
 			puts("parent: cond_signal failed");
 			return 1;
 		}
 
 		*condition = 1;
 
-		if (pthread_mutex_unlock(mut2) != 0) {
+		if (pi_mutex_unlock(mut2) != 0) {
 			puts("parent: mutex_unlock failed");
 			return 1;
 		}

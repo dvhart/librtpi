@@ -25,45 +25,45 @@
 #include <stdio.h>
 #include <unistd.h>
 
-pthread_cond_t cv = PTHREAD_COND_INITIALIZER;
-pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+pi_cond_t cv = PTHREAD_COND_INITIALIZER;
+pi_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 bool exiting;
 int fd, spins, nn;
 enum { count = 8 };		/* Number of worker threads.  */
 
 void *tf(void *id)
 {
-	pthread_mutex_lock(&lock);
+	pi_mutex_lock(&lock);
 
 	if ((long)id == 0) {
 		while (!exiting) {
 			if ((spins++ % 1000) == 0)
 				write(fd, ".", 1);
-			pthread_mutex_unlock(&lock);
+			pi_mutex_unlock(&lock);
 
-			pthread_mutex_lock(&lock);
+			pi_mutex_lock(&lock);
 			int njobs = rand() % (count + 1);
 			nn = njobs;
 			if ((rand() % 30) == 0)
-				pthread_cond_broadcast(&cv);
+				pi_cond_broadcast(&cv);
 			else
 				while (njobs--)
-					pthread_cond_signal(&cv);
+					pi_cond_signal(&cv);
 		}
 
-		pthread_cond_broadcast(&cv);
+		pi_cond_broadcast(&cv);
 	} else {
 		while (!exiting) {
 			while (!nn && !exiting)
-				pthread_cond_wait(&cv, &lock);
+				pi_cond_wait(&cv);
 			--nn;
-			pthread_mutex_unlock(&lock);
+			pi_mutex_unlock(&lock);
 
-			pthread_mutex_lock(&lock);
+			pi_mutex_lock(&lock);
 		}
 	}
 
-	pthread_mutex_unlock(&lock);
+	pi_mutex_unlock(&lock);
 	return NULL;
 }
 
@@ -95,9 +95,9 @@ int do_test(void)
 	struct timespec ts = {.tv_sec = 20,.tv_nsec = 0 };
 	while (nanosleep(&ts, &ts) != 0) ;
 
-	pthread_mutex_lock(&lock);
+	pi_mutex_lock(&lock);
 	exiting = true;
-	pthread_mutex_unlock(&lock);
+	pi_mutex_unlock(&lock);
 
 	for (i = 0; i < count; ++i)
 		pthread_join(th[i], NULL);

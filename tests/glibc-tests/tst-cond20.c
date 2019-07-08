@@ -24,9 +24,9 @@
 
 #define N 10
 #define ROUNDS 1000
-static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-static pthread_cond_t cond2 = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
+static pi_cond_t cond = PTHREAD_COND_INITIALIZER;
+static pi_cond_t cond2 = PTHREAD_COND_INITIALIZER;
+static pi_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 static pthread_barrier_t b;
 static int count;
 
@@ -34,10 +34,10 @@ static void *tf(void *p)
 {
 	int i;
 	for (i = 0; i < ROUNDS; ++i) {
-		pthread_mutex_lock(&mut);
+		pi_mutex_lock(&mut);
 
 		if (++count == N)
-			pthread_cond_signal(&cond2);
+			pi_cond_signal(&cond2);
 
 #ifdef TIMED
 		struct timeval tv;
@@ -46,12 +46,12 @@ static void *tf(void *p)
 		/* Wait three seconds.  */
 		ts.tv_sec = tv.tv_sec + 3;
 		ts.tv_nsec = tv.tv_usec * 1000;
-		pthread_cond_timedwait(&cond, &mut, &ts);
+		pi_cond_timedwait(&cond, &ts);
 #else
-		pthread_cond_wait(&cond, &mut);
+		pi_cond_wait(&cond);
 #endif
 
-		pthread_mutex_unlock(&mut);
+		pi_mutex_unlock(&mut);
 
 		int err = pthread_barrier_wait(&b);
 		if (err != 0 && err != PTHREAD_BARRIER_SERIAL_THREAD) {
@@ -76,7 +76,7 @@ static int do_test(void)
 		return 1;
 	}
 
-	pthread_mutex_lock(&mut);
+	pi_mutex_lock(&mut);
 
 	int i, j, err;
 	pthread_t th[N];
@@ -90,29 +90,29 @@ static int do_test(void)
 	for (i = 0; i < ROUNDS; ++i) {
 		/* Make sure we discard spurious wake-ups.  */
 		do
-			pthread_cond_wait(&cond2, &mut);
+			pi_cond_wait(&cond2);
 		while (count != N);
 
 		if (i & 1)
-			pthread_mutex_unlock(&mut);
+			pi_mutex_unlock(&mut);
 
 		if (i & 2)
-			pthread_cond_broadcast(&cond);
+			pi_cond_broadcast(&cond);
 		else if (i & 4)
 			for (j = 0; j < N; ++j)
-				pthread_cond_signal(&cond);
+				pi_cond_signal(&cond);
 		else {
 			for (j = 0; j < (i / 8) % N; ++j)
-				pthread_cond_signal(&cond);
-			pthread_cond_broadcast(&cond);
+				pi_cond_signal(&cond);
+			pi_cond_broadcast(&cond);
 		}
 
 		if ((i & 1) == 0)
-			pthread_mutex_unlock(&mut);
+			pi_mutex_unlock(&mut);
 
-		err = pthread_cond_destroy(&cond);
+		err = pi_cond_destroy(&cond);
 		if (err) {
-			printf("pthread_cond_destroy failed: %s\n",
+			printf("pi_cond_destroy failed: %s\n",
 			       strerror(err));
 			return 1;
 		}
@@ -127,7 +127,7 @@ static int do_test(void)
 			return 1;
 		}
 
-		pthread_mutex_lock(&mut);
+		pi_mutex_lock(&mut);
 
 		err = pthread_barrier_wait(&b);
 		if (err != 0 && err != PTHREAD_BARRIER_SERIAL_THREAD) {
@@ -136,9 +136,9 @@ static int do_test(void)
 		}
 
 		count = 0;
-		err = pthread_cond_init(&cond, NULL);
+		err = pi_cond_init(&cond, NULL);
 		if (err) {
-			printf("pthread_cond_init failed: %s\n", strerror(err));
+			printf("pi_cond_init failed: %s\n", strerror(err));
 			return 1;
 		}
 	}

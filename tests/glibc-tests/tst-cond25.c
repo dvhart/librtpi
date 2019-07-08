@@ -35,20 +35,20 @@
 
 typedef void *(*thr_func) (void *);
 
-pthread_mutex_t mutex;
-pthread_cond_t cond;
+pi_mutex_t mutex;
+pi_cond_t cond;
 
 void cleanup(void *u)
 {
-	/* pthread_cond_wait should always return with the mutex locked.  The
-	   pthread_mutex_unlock implementation does not actually check whether we
+	/* pi_cond_wait should always return with the mutex locked.  The
+	   pi_mutex_unlock implementation does not actually check whether we
 	   own the mutex for several mutex kinds, so check this explicitly.  */
-	int ret = pthread_mutex_trylock(&mutex);
+	int ret = pi_mutex_trylock(&mutex);
 	if (ret != EDEADLK && ret != EBUSY) {
 		printf("mutex not locked in cleanup %d\n", ret);
 		abort();
 	}
-	if (pthread_mutex_unlock(&mutex))
+	if (pi_mutex_unlock(&mutex))
 		abort();
 }
 
@@ -58,18 +58,18 @@ void *signaller(void *u)
 	void *tret = NULL;
 
 	for (i = 0; i < ITERS; i++) {
-		if ((ret = pthread_mutex_lock(&mutex)) != 0) {
+		if ((ret = pi_mutex_lock(&mutex)) != 0) {
 			tret = (void *)1;
 			printf("signaller:mutex_lock failed: %s\n",
 			       strerror(ret));
 			goto out;
 		}
-		if ((ret = pthread_cond_signal(&cond)) != 0) {
+		if ((ret = pi_cond_signal(&cond)) != 0) {
 			tret = (void *)1;
 			printf("signaller:signal failed: %s\n", strerror(ret));
 			goto unlock_out;
 		}
-		if ((ret = pthread_mutex_unlock(&mutex)) != 0) {
+		if ((ret = pi_mutex_unlock(&mutex)) != 0) {
 			tret = (void *)1;
 			printf("signaller:mutex_unlock failed: %s\n",
 			       strerror(ret));
@@ -82,7 +82,7 @@ out:
 	return tret;
 
 unlock_out:
-	if ((ret = pthread_mutex_unlock(&mutex)) != 0)
+	if ((ret = pi_mutex_unlock(&mutex)) != 0)
 		printf("signaller:mutex_unlock[2] failed: %s\n", strerror(ret));
 	goto out;
 }
@@ -94,7 +94,7 @@ void *waiter(void *u)
 	int seq = (uintptr_t) u;
 
 	for (i = 0; i < ITERS / NUM; i++) {
-		if ((ret = pthread_mutex_lock(&mutex)) != 0) {
+		if ((ret = pi_mutex_lock(&mutex)) != 0) {
 			tret = (void *)(uintptr_t) 1;
 			printf("waiter[%u]:mutex_lock failed: %s\n", seq,
 			       strerror(ret));
@@ -102,14 +102,14 @@ void *waiter(void *u)
 		}
 		pthread_cleanup_push(cleanup, NULL);
 
-		if ((ret = pthread_cond_wait(&cond, &mutex)) != 0) {
+		if ((ret = pi_cond_wait(&cond)) != 0) {
 			tret = (void *)(uintptr_t) 1;
 			printf("waiter[%u]:wait failed: %s\n", seq,
 			       strerror(ret));
 			goto unlock_out;
 		}
 
-		if ((ret = pthread_mutex_unlock(&mutex)) != 0) {
+		if ((ret = pi_mutex_unlock(&mutex)) != 0) {
 			tret = (void *)(uintptr_t) 1;
 			printf("waiter[%u]:mutex_unlock failed: %s\n", seq,
 			       strerror(ret));
@@ -123,7 +123,7 @@ out:
 	return tret;
 
 unlock_out:
-	if ((ret = pthread_mutex_unlock(&mutex)) != 0)
+	if ((ret = pi_mutex_unlock(&mutex)) != 0)
 		printf("waiter:mutex_unlock[2] failed: %s\n", strerror(ret));
 	goto out;
 }
@@ -145,7 +145,7 @@ void *timed_waiter(void *u)
 		}
 		ts.tv_sec += 20;
 
-		if ((ret = pthread_mutex_lock(&mutex)) != 0) {
+		if ((ret = pi_mutex_lock(&mutex)) != 0) {
 			tret = (void *)(uintptr_t) 1;
 			printf("waiter[%u]:mutex_lock failed: %s\n", seq,
 			       strerror(ret));
@@ -154,13 +154,13 @@ void *timed_waiter(void *u)
 		pthread_cleanup_push(cleanup, NULL);
 
 		/* We should not time out either.  */
-		if ((ret = pthread_cond_timedwait(&cond, &mutex, &ts)) != 0) {
+		if ((ret = pi_cond_timedwait(&cond, &ts)) != 0) {
 			tret = (void *)(uintptr_t) 1;
 			printf("waiter[%u]:timedwait failed: %s\n", seq,
 			       strerror(ret));
 			goto unlock_out;
 		}
-		if ((ret = pthread_mutex_unlock(&mutex)) != 0) {
+		if ((ret = pi_mutex_unlock(&mutex)) != 0) {
 			tret = (void *)(uintptr_t) 1;
 			printf("waiter[%u]:mutex_unlock failed: %s\n", seq,
 			       strerror(ret));
@@ -174,7 +174,7 @@ out:
 	return tret;
 
 unlock_out:
-	if ((ret = pthread_mutex_unlock(&mutex)) != 0)
+	if ((ret = pi_mutex_unlock(&mutex)) != 0)
 		printf("waiter[%u]:mutex_unlock[2] failed: %s\n", seq,
 		       strerror(ret));
 	goto out;
@@ -202,12 +202,12 @@ int do_test_wait(thr_func f)
 			goto out;
 		}
 
-		if ((ret = pthread_cond_init(&cond, NULL)) != 0) {
+		if ((ret = pi_cond_init(&cond, NULL)) != 0) {
 			printf("cond_init failed: %s\n", strerror(ret));
 			goto out;
 		}
 
-		if ((ret = pthread_mutex_init(&mutex, &attr)) != 0) {
+		if ((ret = pi_mutex_init(&mutex, &attr)) != 0) {
 			printf("mutex_init failed: %s\n", strerror(ret));
 			goto out;
 		}

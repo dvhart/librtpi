@@ -25,14 +25,14 @@
 #define N 10
 #define ROUNDS 100
 
-static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
+static pi_cond_t cond = PTHREAD_COND_INITIALIZER;
+static pi_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 static pthread_barrier_t bN1;
 static pthread_barrier_t b2;
 
 static void *tf(void *p)
 {
-	if (pthread_mutex_lock(&mut) != 0) {
+	if (pi_mutex_lock(&mut) != 0) {
 		puts("child: 1st mutex_lock failed");
 		exit(1);
 	}
@@ -43,12 +43,12 @@ static void *tf(void *p)
 		exit(1);
 	}
 
-	if (pthread_cond_wait(&cond, &mut) != 0) {
+	if (pi_cond_wait(&cond) != 0) {
 		puts("child: cond_wait failed");
 		exit(1);
 	}
 
-	if (pthread_mutex_unlock(&mut) != 0) {
+	if (pi_mutex_unlock(&mut) != 0) {
 		puts("child: mutex_unlock failed");
 		exit(1);
 	}
@@ -105,11 +105,11 @@ static int do_test(void)
 			}
 		}
 
-		if (pthread_mutex_lock(&mut) != 0) {
+		if (pi_mutex_lock(&mut) != 0) {
 			puts("parent: mutex_lock failed");
 			exit(1);
 		}
-		if (pthread_mutex_unlock(&mut) != 0) {
+		if (pi_mutex_unlock(&mut) != 0) {
 			puts("parent: mutex_unlock failed");
 			exit(1);
 		}
@@ -117,7 +117,7 @@ static int do_test(void)
 		/* N single signal calls.  Without locking.  This tests that no
 		   signal gets lost.  */
 		for (i = 0; i < N; ++i)
-			if (pthread_cond_signal(&cond) != 0) {
+			if (pi_cond_signal(&cond) != 0) {
 				puts("cond_signal failed");
 				exit(1);
 			}

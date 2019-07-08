@@ -21,8 +21,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+static pi_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
+static pi_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 static pthread_barrier_t bar;
 
@@ -33,7 +33,7 @@ static void *tf(void *a)
 
 	printf("child %d: lock\n", i);
 
-	err = pthread_mutex_lock(&mut);
+	err = pi_mutex_lock(&mut);
 	if (err != 0)
 		error(EXIT_FAILURE, err, "locking in child failed");
 
@@ -47,13 +47,13 @@ static void *tf(void *a)
 
 	printf("child %d: wait\n", i);
 
-	err = pthread_cond_wait(&cond, &mut);
+	err = pi_cond_wait(&cond);
 	if (err != 0)
 		error(EXIT_FAILURE, err, "child %d: failed to wait", i);
 
 	printf("child %d: woken up\n", i);
 
-	err = pthread_mutex_unlock(&mut);
+	err = pi_mutex_unlock(&mut);
 	if (err != 0)
 		error(EXIT_FAILURE, err, "child %d: unlock[2] failed", i);
 
@@ -114,18 +114,18 @@ static int do_test(void)
 
 	puts("get lock outselves");
 
-	err = pthread_mutex_lock(&mut);
+	err = pi_mutex_lock(&mut);
 	if (err != 0)
 		error(EXIT_FAILURE, err, "mut locking failed");
 
 	puts("broadcast");
 
 	/* Wake up all threads.  */
-	err = pthread_cond_broadcast(&cond);
+	err = pi_cond_broadcast(&cond);
 	if (err != 0)
 		error(EXIT_FAILURE, err, "parent: broadcast failed");
 
-	err = pthread_mutex_unlock(&mut);
+	err = pi_mutex_unlock(&mut);
 	if (err != 0)
 		error(EXIT_FAILURE, err, "mut unlocking failed");
 
