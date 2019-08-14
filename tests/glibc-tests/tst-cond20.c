@@ -99,9 +99,6 @@ static int do_test(void)
 			pi_cond_wait(&cond2);
 		while (count != N);
 
-		if (i & 1)
-			pi_mutex_unlock(&mut);
-
 		if (i & 2)
 			pi_cond_broadcast(&cond);
 		else if (i & 4)
@@ -113,8 +110,7 @@ static int do_test(void)
 			pi_cond_broadcast(&cond);
 		}
 
-		if ((i & 1) == 0)
-			pi_mutex_unlock(&mut);
+		pi_mutex_unlock(&mut);
 
 		err = pi_cond_destroy(&cond);
 		if (err) {
