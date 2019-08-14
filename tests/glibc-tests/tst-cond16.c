@@ -49,13 +49,9 @@ void *tf(void *dummy)
 		n = false;
 		if (exiting)
 			loop = false;
-#ifdef UNLOCK_AFTER_BROADCAST
+
 		pi_cond_broadcast(&cv);
 		pi_mutex_unlock(&lock);
-#else
-		pi_mutex_unlock(&lock);
-		pi_cond_broadcast(&cv);
-#endif
 	}
 
 	return NULL;

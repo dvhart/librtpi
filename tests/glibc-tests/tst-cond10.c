@@ -107,22 +107,22 @@ static int do_test(void)
 			}
 		}
 
-		if (pi_mutex_lock(&mut) != 0) {
-			puts("parent: mutex_lock failed");
-			exit(1);
-		}
-		if (pi_mutex_unlock(&mut) != 0) {
-			puts("parent: mutex_unlock failed");
-			exit(1);
-		}
-
-		/* N single signal calls.  Without locking.  This tests that no
-		   signal gets lost.  */
-		for (i = 0; i < N; ++i)
+		/* N single signal calls. This tests that no signal
+		   gets lost. */
+		for (i = 0; i < N; ++i) {
+			if (pi_mutex_lock(&mut) != 0) {
+				puts("parent: mutex_lock failed");
+				exit(1);
+			}
 			if (pi_cond_signal(&cond) != 0) {
 				puts("cond_signal failed");
 				exit(1);
 			}
+			if (pi_mutex_unlock(&mut) != 0) {
+				puts("parent: mutex_unlock failed");
+				exit(1);
+			}
+		}
 
 		int e = pthread_barrier_wait(&bN1);
 		if (e != 0 && e != PTHREAD_BARRIER_SERIAL_THREAD) {
