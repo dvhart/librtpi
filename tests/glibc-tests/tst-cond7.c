@@ -25,6 +25,8 @@
 #include <time.h>
 #include <sys/time.h>
 
+#include "rtpi.h"
+
 typedef struct {
 	pi_cond_t cond;
 	pi_mutex_t lock;
@@ -84,8 +86,8 @@ static int do_test(void)
 			exit(1);
 		}
 
-		if (pi_mutex_init(&t[i]->lock, NULL) != 0
-		    || pi_cond_init(&t[i]->cond, NULL) != 0) {
+		if (pi_mutex_init(&t[i]->lock, 0) != 0
+		    || pi_cond_init(&t[i]->cond, &t[i]->lock, 0) != 0) {
 			puts("an _init function failed");
 			exit(1);
 		}
