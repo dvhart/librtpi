@@ -127,7 +127,7 @@ int pi_cond_timedwait(pi_cond_t *cond, const struct timespec *restrict abstime)
 	if (ret)
 		return ret;
 	ret = futex_wait_requeue_pi(cond, 0, abstime, cond->mutex);
-	return ret;
+	return (ret) ? errno : 0;
 }
 
 int pi_cond_signal(pi_cond_t *cond)
@@ -204,7 +204,7 @@ int pi_cond_broadcast(pi_cond_t *cond)
 			cond->pending_wake = cond->pending_wait;
 			pi_mutex_unlock(&cond->priv_mut);
 		} else {
-			return ret;
+			return errno;
 		}
 	} while (1);
 	return 0;

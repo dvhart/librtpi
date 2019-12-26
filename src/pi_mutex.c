@@ -58,7 +58,7 @@ int pi_mutex_lock(pi_mutex_t *mutex)
 	if (pi_mutex_trylock(mutex))
 		return 0;
 	/* XXX EWNERDEAD */
-	return futex_lock_pi(mutex);
+	return (futex_lock_pi(mutex)) ? errno : 0;
 }
 
 #define FUTEX_TID_MASK          0x3fffffff
@@ -93,5 +93,5 @@ int pi_mutex_unlock(pi_mutex_t *mutex)
 					   pid, 0);
 	if (ret == true)
 		return 0;
-	return futex_unlock_pi(mutex);
+	return (futex_unlock_pi(mutex)) ? errno : 0;
 }
