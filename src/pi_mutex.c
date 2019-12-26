@@ -36,7 +36,7 @@ int pi_mutex_init(pi_mutex_t *mutex, uint32_t flags)
 
 	/* Check for unknown options */
 	if (flags & ~(RTPI_MUTEX_PSHARED)) {
-		ret = -EINVAL;
+		ret = EINVAL;
 		goto out;
 	}
 
@@ -70,7 +70,7 @@ int pi_mutex_trylock(pi_mutex_t *mutex)
 
 	pid = gettid();
 	if (pid == (mutex->futex & FUTEX_TID_MASK))
-		return -EDEADLOCK;
+		return EDEADLOCK;
 
 	ret = __sync_bool_compare_and_swap(&mutex->futex,
 					   0, pid);
