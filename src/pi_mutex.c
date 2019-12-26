@@ -85,10 +85,9 @@ int pi_mutex_unlock(pi_mutex_t *mutex)
 	bool ret;
 
 	pid = gettid();
-#if 0
-	XXX
 	if (pid != (mutex->futex & FUTEX_TID_MASK))
-#endif
+		return EPERM;
+
 	ret = __sync_bool_compare_and_swap(&mutex->futex,
 					   pid, 0);
 	if (ret == true)
