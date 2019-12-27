@@ -55,9 +55,11 @@ int pi_mutex_destroy(pi_mutex_t *mutex)
 
 int pi_mutex_lock(pi_mutex_t *mutex)
 {
-	if (!pi_mutex_trylock(mutex))
-		return 0;
-	/* XXX EWNERDEAD */
+	int ret;
+
+	ret = pi_mutex_trylock(mutex);
+	if (!ret || ret == EDEADLOCK)
+		return ret;
 	return (futex_lock_pi(mutex)) ? errno : 0;
 }
 
