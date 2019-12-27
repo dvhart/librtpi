@@ -55,7 +55,7 @@ int pi_mutex_destroy(pi_mutex_t *mutex)
 
 int pi_mutex_lock(pi_mutex_t *mutex)
 {
-	if (pi_mutex_trylock(mutex))
+	if (!pi_mutex_trylock(mutex))
 		return 0;
 	/* XXX EWNERDEAD */
 	return (futex_lock_pi(mutex)) ? errno : 0;
@@ -74,8 +74,8 @@ int pi_mutex_trylock(pi_mutex_t *mutex)
 
 	ret = __sync_bool_compare_and_swap(&mutex->futex,
 					   0, pid);
-	if (ret == true)
-		return 1;
+	if (!ret)
+		return EBUSY;
 	return 0;
 }
 
