@@ -6,7 +6,7 @@
 
 static pthread_barrier_t b;
 static DEFINE_PI_MUTEX(m, 0);
-static DEFINE_PI_COND(c, &m, 0);
+static DEFINE_PI_COND(c, 0);
 
 static void cl(void *arg)
 {
@@ -30,7 +30,7 @@ static void *tf(void *arg)
 	   on the mutex.  In this case the beginning of the second cond_wait
 	   call will cause the cancellation to happen.  */
 	do
-		if (pi_cond_wait(&c) != 0) {
+		if (pi_cond_wait(&c, &m) != 0) {
 			printf("%s: cond_wait failed\n", __func__);
 			exit(1);
 		}
@@ -66,7 +66,7 @@ static int do_test(void)
 		puts("1st mutex_lock failed");
 		return 1;
 	}
-	if (pi_cond_signal(&c) != 0) {
+	if (pi_cond_signal(&c, &m) != 0) {
 		puts("1st cond_signal failed");
 		return 1;
 	}
@@ -101,7 +101,7 @@ static int do_test(void)
 		puts("2nd mutex_lock failed");
 		return 1;
 	}
-	if (pi_cond_signal(&c) != 0) {
+	if (pi_cond_signal(&c, &m) != 0) {
 		puts("2nd cond_signal failed");
 		return 1;
 	}

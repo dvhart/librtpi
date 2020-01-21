@@ -65,7 +65,7 @@ void *signaller(void *u)
 			       strerror(ret));
 			goto out;
 		}
-		if ((ret = pi_cond_signal(&cond)) != 0) {
+		if ((ret = pi_cond_signal(&cond, &mutex)) != 0) {
 			tret = (void *)1;
 			printf("signaller:signal failed: %s\n", strerror(ret));
 			goto unlock_out;
@@ -103,7 +103,7 @@ void *waiter(void *u)
 		}
 		pthread_cleanup_push(cleanup, NULL);
 
-		if ((ret = pi_cond_wait(&cond)) != 0) {
+		if ((ret = pi_cond_wait(&cond, &mutex)) != 0) {
 			tret = (void *)(uintptr_t) 1;
 			printf("waiter[%u]:wait failed: %s\n", seq,
 			       strerror(ret));
@@ -155,7 +155,7 @@ void *timed_waiter(void *u)
 		pthread_cleanup_push(cleanup, NULL);
 
 		/* We should not time out either.  */
-		if ((ret = pi_cond_timedwait(&cond, &ts)) != 0) {
+		if ((ret = pi_cond_timedwait(&cond, &mutex, &ts)) != 0) {
 			tret = (void *)(uintptr_t) 1;
 			printf("waiter[%u]:timedwait failed: %s\n", seq,
 			       strerror(ret));
@@ -194,7 +194,7 @@ int do_test_wait(thr_func f)
 			goto out;
 		}
 
-		if ((ret = pi_cond_init(&cond, &mutex, 0)) != 0) {
+		if ((ret = pi_cond_init(&cond, 0)) != 0) {
 			printf("cond_init failed: %s\n", strerror(ret));
 			goto out;
 		}

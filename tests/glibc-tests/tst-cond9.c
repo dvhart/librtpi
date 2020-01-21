@@ -25,11 +25,11 @@
 #include "rtpi.h"
 
 static DEFINE_PI_MUTEX(mut, 0);
-static DEFINE_PI_COND(cond, &mut, 0);
+static DEFINE_PI_COND(cond, 0);
 
 static void *tf(void *arg)
 {
-	int err = pi_cond_wait(&cond);
+	int err = pi_cond_wait(&cond, &mut);
 	if (err == 0) {
 		puts("cond_wait did not fail");
 		exit(1);
@@ -48,7 +48,7 @@ static void *tf(void *arg)
 	}
 	ts.tv_sec += 1000;
 
-	err = pi_cond_timedwait(&cond, &ts);
+	err = pi_cond_timedwait(&cond, &mut, &ts);
 	if (err == 0) {
 		puts("cond_timedwait did not fail");
 		exit(1);
@@ -70,7 +70,7 @@ static int do_test(void)
 
 	printf("&cond = %p\n&mut = %p\n", &cond, &mut);
 
-	err = pi_cond_wait(&cond);
+	err = pi_cond_wait(&cond, &mut);
 	if (err == 0) {
 		puts("cond_wait did not fail");
 		exit(1);
@@ -89,7 +89,7 @@ static int do_test(void)
 	}
 	ts.tv_sec += 1000;
 
-	err = pi_cond_timedwait(&cond, &ts);
+	err = pi_cond_timedwait(&cond, &mut, &ts);
 	if (err == 0) {
 		puts("cond_timedwait did not fail");
 		exit(1);

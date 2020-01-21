@@ -28,7 +28,7 @@
 #define ROUNDS 100
 
 static DEFINE_PI_MUTEX(mut, 0);
-static DEFINE_PI_COND(cond, &mut, 0);
+static DEFINE_PI_COND(cond, 0);
 static pthread_barrier_t bN1;
 static pthread_barrier_t b2;
 
@@ -45,7 +45,7 @@ static void *tf(void *p)
 		exit(1);
 	}
 
-	if (pi_cond_wait(&cond) != 0) {
+	if (pi_cond_wait(&cond, &mut) != 0) {
 		puts("child: cond_wait failed");
 		exit(1);
 	}
@@ -114,7 +114,7 @@ static int do_test(void)
 				puts("parent: mutex_lock failed");
 				exit(1);
 			}
-			if (pi_cond_signal(&cond) != 0) {
+			if (pi_cond_signal(&cond, &mut) != 0) {
 				puts("cond_signal failed");
 				exit(1);
 			}

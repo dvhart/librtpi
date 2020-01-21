@@ -53,7 +53,7 @@ low_tf (void *p)
   err = pi_mutex_lock (m1);
   if (err != 0)
     error (EXIT_FAILURE, err, "low_tf: failed to lock m1");
-  err = pi_cond_wait (sig1);
+  err = pi_cond_wait (sig1, m1);
   if (err != 0)
     error (EXIT_FAILURE, err, "low_tf: cond_wait failed on sig1");
 
@@ -65,7 +65,7 @@ low_tf (void *p)
 
   /* Signal the high_tf that we have the race_mut, it will preempt us until it
    * blocks on race_mut.  */
-  err = pi_cond_signal (sig2);
+  err = pi_cond_signal (sig2, m2);
   if (err != 0)
     error (EXIT_FAILURE, err, "low_tf: failed to signal sig2");
 
@@ -73,7 +73,7 @@ low_tf (void *p)
      will preempt us before we can release the cond_lock.  It will signal med_tf
      which will continue to block us after high_tf tries to block on race_var if
      it isn't PTHREAD_PRIO_INHERIT, and the cond_lock will never be released.  */
-  err = pi_cond_wait (race_var);
+  err = pi_cond_wait (race_var, race_mut);
   if (err != 0)
     error (EXIT_FAILURE, err, "low_tf: cond_wait failed on race_var");
 
@@ -97,7 +97,7 @@ high_tf (void *p)
 
   /* Wait for low_tf to take race_mut and signal us.  We will preempt low_tf
    * until we block on race_mut below.  */
-  err = pi_cond_wait (sig2);
+  err = pi_cond_wait (sig2, m2);
   if (err != 0)
     error (EXIT_FAILURE, err, "high_tf: cond_wait failed on sig2");
 
@@ -109,14 +109,14 @@ high_tf (void *p)
   puts ("high_tf: locked");
 
   /* Signal the med_tf to start spinning.  */
-  err = pi_cond_signal (sig3);
+  err = pi_cond_signal (sig3, m3);
   if (err != 0)
     error (EXIT_FAILURE, err, "high_tf: failed to signal sig3");
 
   /* If the race_var isn't PTHREAD_PRIO_INHERIT, we will block on the
      race_var cond_lock waiting for the low_tf to release it in it's
      pi_cond_wait(&race_var, &race_mut) call.  */
-  err = pi_cond_wait (race_var);
+  err = pi_cond_wait (race_var, race_mut);
   if (err != 0)
     error (EXIT_FAILURE, err, "high_tf: cond_wait failed on race_var");
 
@@ -140,7 +140,7 @@ med_tf (void *p)
     error (EXIT_FAILURE, err, "med_tf: failed to lock m3");
 
   /* Wait for high_tf to signal us.  */
-  err = pi_cond_wait (sig3);
+  err = pi_cond_wait (sig3, m3);
   if (err != 0)
     error (EXIT_FAILURE, err, "med_tf: cond_wait failed on sig3");
 
@@ -201,19 +201,19 @@ do_test (void)
   if (err != 0)
     error (EXIT_FAILURE, err, "parent: failed to init mutex race_mut");
 
-  err = pi_cond_init (sig1, m1, 0);
+  err = pi_cond_init (sig1, 0);
   if (err != 0)
     error (EXIT_FAILURE, err, "parent: failed to init cond sig1");
 
-  err = pi_cond_init (sig2, m2, 0);
+  err = pi_cond_init (sig2, 0);
   if (err != 0)
     error (EXIT_FAILURE, err, "parent: failed to init cond sig2");
 
-  err = pi_cond_init (sig3, m3, 0);
+  err = pi_cond_init (sig3, 0);
   if (err != 0)
     error (EXIT_FAILURE, err, "parent: failed to init cond sig3");
 
-  err = pi_cond_init (race_var, race_mut, 0);
+  err = pi_cond_init (race_var, 0);
   if (err != 0)
     error (EXIT_FAILURE, err, "parent: failed to init cond race_var");
 
@@ -255,7 +255,7 @@ do_test (void)
 
   /* Wait for the threads to start and block on their respective condvars.  */
   usleep (1000);
-  err = pi_cond_signal (sig1);
+  err = pi_cond_signal (sig1, m1);
   if (err != 0)
     error (EXIT_FAILURE, err, "parent: failed to signal condition");
 
@@ -263,7 +263,7 @@ do_test (void)
      PTHREAD_PRIO_INHERIT, low_tf will not have released the race_var cond_lock
      and neither thread will have waited on race_var.  */
   usleep (1000);
-  err = pi_cond_broadcast (race_var);
+  err = pi_cond_broadcast (race_var, race_mut);
   if (err != 0)
     error (EXIT_FAILURE, err, "parent: failed to broadcast condition");
 

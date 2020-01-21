@@ -26,7 +26,7 @@
 #include "rtpi.h"
 
 static DEFINE_PI_MUTEX(mut, 0);
-static DEFINE_PI_COND(cond, &mut, 0);
+static DEFINE_PI_COND(cond, 0);
 
 static int do_test(void)
 {
@@ -51,7 +51,7 @@ static int do_test(void)
 		ts.tv_nsec -= 1000000000;
 		++ts.tv_sec;
 	}
-	err = pi_cond_timedwait(&cond, &ts);
+	err = pi_cond_timedwait(&cond, &mut, &ts);
 	if (err == 0) {
 		/* This could in theory happen but here without any signal and
 		   additional waiter it should not.  */
