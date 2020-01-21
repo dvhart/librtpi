@@ -44,7 +44,7 @@ static void *low_tf (void *p)
 	if (err != 0)
 		error (EXIT_FAILURE, err, "T%d: failed to lock m1\n", num);
 
-	err = pi_cond_wait (sig1);
+	err = pi_cond_wait (sig1, m1);
 	if (err != 0)
 		error (EXIT_FAILURE, err, "T%d: cond_wait failed on sig1\n", num);
 
@@ -74,7 +74,7 @@ static int do_test (void)
 	if (err != 0)
 		error (EXIT_FAILURE, err, "parent: failed to init mutex m1");
 
-	err = pi_cond_init (sig1, m1, 0);
+	err = pi_cond_init (sig1, 0);
 	if (err != 0)
 		error (EXIT_FAILURE, err, "parent: failed to init cond sig1");
 
@@ -88,12 +88,12 @@ static int do_test (void)
 	for (i = 0; i < 2; i++) {
 		sleep (1);
 		printf("Sig %d\n", i);
-		err = pi_cond_signal (sig1);
+		err = pi_cond_signal (sig1, m1);
 		if (err != 0)
 			error (EXIT_FAILURE, err, "parent: failed to signal condition");
 	}
 	printf("BROAD\n");
-	err = pi_cond_broadcast (sig1);
+	err = pi_cond_broadcast (sig1, m1);
 
 	for (i = 0; i < 20; i++) {
 		err = pthread_join (tthread[i], NULL);

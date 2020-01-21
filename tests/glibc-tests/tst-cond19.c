@@ -25,7 +25,7 @@
 #include "rtpi.h"
 
 static DEFINE_PI_MUTEX(mut, 0);
-static DEFINE_PI_COND(cond, &mut, 0);
+static DEFINE_PI_COND(cond, 0);
 
 static int do_test(void)
 {
@@ -39,7 +39,7 @@ static int do_test(void)
 
 	ts.tv_nsec = -1;
 
-	int e = pi_cond_timedwait(&cond, &ts);
+	int e = pi_cond_timedwait(&cond, &mut, &ts);
 	if (e == 0) {
 		puts("first cond_timedwait did not fail");
 		result = 1;
@@ -50,7 +50,7 @@ static int do_test(void)
 
 	ts.tv_nsec = 2000000000;
 
-	e = pi_cond_timedwait(&cond, &ts);
+	e = pi_cond_timedwait(&cond, &mut, &ts);
 	if (e == 0) {
 		puts("second cond_timedwait did not fail");
 		result = 1;

@@ -54,12 +54,12 @@ static void *tf(void *arg)
 
 	done = true;
 
-	if (pi_cond_signal(&t->cond) != 0) {
+	if (pi_cond_signal(&t->cond, &t->lock) != 0) {
 		puts("child: cond_signal failed");
 		exit(1);
 	}
 
-	if (pi_cond_wait(&t->cond) != 0) {
+	if (pi_cond_wait(&t->cond, &t->lock) != 0) {
 		puts("child: cond_wait failed");
 		exit(1);
 	}
@@ -87,7 +87,7 @@ static int do_test(void)
 		}
 
 		if (pi_mutex_init(&t[i]->lock, 0) != 0
-		    || pi_cond_init(&t[i]->cond, &t[i]->lock, 0) != 0) {
+		    || pi_cond_init(&t[i]->cond, 0) != 0) {
 			puts("an _init function failed");
 			exit(1);
 		}
@@ -105,7 +105,7 @@ static int do_test(void)
 		}
 
 		do
-			if (pi_cond_wait(&t[i]->cond) != 0) {
+			if (pi_cond_wait(&t[i]->cond,  &t[i]->lock) != 0) {
 				puts("cond_wait failed");
 				exit(1);
 			}

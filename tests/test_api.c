@@ -28,7 +28,7 @@ int main(int argc, char *argv)
 		goto out;
 	}
 
-	ret = pi_cond_init(cond, mutex, 0x0);
+	ret = pi_cond_init(cond, 0x0);
 	if (ret) {
 		printf("ERROR: pi_cond_init returned %d\n", ret);
 		goto out;

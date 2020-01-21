@@ -23,7 +23,7 @@
 #include "rtpi.h"
 
 static DEFINE_PI_MUTEX(mut, 0);
-static DEFINE_PI_COND(cond, &mut, 0);
+static DEFINE_PI_COND(cond, 0);
 static pthread_barrier_t bar;
 
 static void *tf(void *a)
@@ -47,7 +47,7 @@ static void *tf(void *a)
 
 	printf("child %d: wait\n", i);
 
-	err = pi_cond_wait(&cond);
+	err = pi_cond_wait(&cond, &mut);
 	if (err != 0)
 		error(EXIT_FAILURE, err, "child %d: failed to wait", i);
 
@@ -121,7 +121,7 @@ static int do_test(void)
 	puts("broadcast");
 
 	/* Wake up all threads.  */
-	err = pi_cond_broadcast(&cond);
+	err = pi_cond_broadcast(&cond, &mut);
 	if (err != 0)
 		error(EXIT_FAILURE, err, "parent: broadcast failed");
 

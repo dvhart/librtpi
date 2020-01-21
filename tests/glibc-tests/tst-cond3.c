@@ -31,7 +31,7 @@ static int do_test(void);
    are added.  This is a reasonable demand.  */
 
 static DEFINE_PI_MUTEX(mut, 0);
-static DEFINE_PI_COND(cond, &mut, 0);
+static DEFINE_PI_COND(cond, 0);
 
 #define N 10
 
@@ -48,7 +48,7 @@ static void *tf(void *arg)
 	}
 
 	/* This call should never return.  */
-	err = pi_cond_wait(&cond);
+	err = pi_cond_wait(&cond, &mut);
 	if (err != 0) {
 		printf("child %d pi_cond_wait failed to wait: %s\n",
 		       i, strerror(err));
@@ -97,7 +97,7 @@ static int do_test(void)
 	delayed_exit(1);
 
 	/* This call should never return.  */
-	err = pi_cond_wait(&cond);
+	err = pi_cond_wait(&cond, &mut);
 	if (err != 0) {
 		puts("error: pi_cond_wait in do_test failed to wait");
 		return 1;

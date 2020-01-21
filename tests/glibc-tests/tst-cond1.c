@@ -23,7 +23,7 @@
 #include "rtpi.h"
 
 static DEFINE_PI_MUTEX(mut, 0);
-static DEFINE_PI_COND(cond, &mut, 0);
+static DEFINE_PI_COND(cond, 0);
 
 static void *tf(void *p)
 {
@@ -35,7 +35,7 @@ static void *tf(void *p)
 
 	puts("child: got mutex; signalling");
 
-	pi_cond_signal(&cond);
+	pi_cond_signal(&cond, &mut);
 
 	puts("child: unlock");
 
@@ -72,7 +72,7 @@ static int do_test(void)
 	/* This test will fail on spurious wake-ups, which are allowed; however,
 	   the current implementation shouldn't produce spurious wake-ups in the
 	   scenario we are testing here.  */
-	err = pi_cond_wait(&cond);
+	err = pi_cond_wait(&cond, &mut);
 	if (err != 0)
 		error(EXIT_FAILURE, err, "parent: cannot wait fir signal");
 

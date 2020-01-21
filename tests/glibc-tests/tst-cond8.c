@@ -25,7 +25,7 @@
 #include "rtpi.h"
 
 static DEFINE_PI_MUTEX(mut, 0);
-static DEFINE_PI_COND(cond, &mut, 0);
+static DEFINE_PI_COND(cond, 0);
 static pthread_barrier_t bar;
 
 static void ch(void *arg)
@@ -75,7 +75,7 @@ static void *tf1(void *p)
 
 	pthread_cleanup_push(ch, NULL);
 
-	pi_cond_wait(&cond);
+	pi_cond_wait(&cond, &mut);
 
 	pthread_cleanup_pop(0);
 
@@ -118,7 +118,7 @@ static void *tf2(void *p)
 	}
 	ts.tv_sec += 1000;
 
-	pi_cond_timedwait(&cond, &ts);
+	pi_cond_timedwait(&cond, &mut, &ts);
 
 	pthread_cleanup_pop(0);
 

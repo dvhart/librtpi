@@ -58,7 +58,7 @@ void *thread_fun_timed(void *arg)
 			struct timespec ts;
 			clock_gettime(CLOCK_MONOTONIC, &ts);
 			ts.tv_sec += 20;
-			rv = pi_cond_timedwait(&cond, &ts);
+			rv = pi_cond_timedwait(&cond, &mutex, &ts);
 
 			/* There should be no timeout either.  */
 			if (rv) {
@@ -103,7 +103,7 @@ void *thread_fun(void *arg)
 		}
 
 		while (!pending) {
-			rv = pi_cond_wait(&cond);
+			rv = pi_cond_wait(&cond, &mutex);
 
 			if (rv) {
 				printf("pi_cond_wait: %s(%d)\n",
@@ -145,7 +145,7 @@ static int do_test_wait(threadfunc f)
 		return 1;
 	}
 
-	rv = pi_cond_init(&cond, &mutex, 0);
+	rv = pi_cond_init(&cond, 0);
 	if (rv) {
 		printf("pi_cond_init: %s(%d)\n", strerror(rv), rv);
 		return 1;
@@ -172,7 +172,7 @@ static int do_test_wait(threadfunc f)
 			printf("counter: %d\n", counter);
 		pending += 1;
 
-		rv = pi_cond_signal(&cond);
+		rv = pi_cond_signal(&cond, &mutex);
 		if (rv) {
 			printf("pi_cond_signal: %s(%d)\n", strerror(rv),
 			       rv);

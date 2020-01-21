@@ -28,7 +28,7 @@
 #include "rtpi.h"
 
 DEFINE_PI_MUTEX(lock, 0);
-DEFINE_PI_COND(cv, &lock, 0);
+DEFINE_PI_COND(cv, 0);
 bool exiting;
 int fd, spins, nn;
 enum { count = 8 };		/* Number of worker threads.  */
@@ -47,17 +47,17 @@ void *tf(void *id)
 			int njobs = rand() % (count + 1);
 			nn = njobs;
 			if ((rand() % 30) == 0)
-				pi_cond_broadcast(&cv);
+				pi_cond_broadcast(&cv, &lock);
 			else
 				while (njobs--)
-					pi_cond_signal(&cv);
+					pi_cond_signal(&cv, &lock);
 		}
 
-		pi_cond_broadcast(&cv);
+		pi_cond_broadcast(&cv, &lock);
 	} else {
 		while (!exiting) {
 			while (!nn && !exiting)
-				pi_cond_wait(&cv);
+				pi_cond_wait(&cv, &lock);
 			--nn;
 			pi_mutex_unlock(&lock);
 

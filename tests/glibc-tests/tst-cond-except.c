@@ -50,7 +50,7 @@ void *thr(void *arg)
 	ret = pi_mutex_init(&mutex, 0);
 	CHECK_RETURN_VAL_OR_FAIL(ret, "pi_mutex_init");
 
-	ret = pi_cond_init(&cond, &mutex, 0);
+	ret = pi_cond_init(&cond, 0);
 	CHECK_RETURN_VAL_OR_FAIL(ret, "pi_cond_init");
 
 	puts("th: Init done, entering wait...");
@@ -59,7 +59,7 @@ void *thr(void *arg)
 	ret = pi_mutex_lock(&mutex);
 	CHECK_RETURN_VAL_OR_FAIL(ret, "pi_mutex_lock");
 	while (1) {
-		ret = pi_cond_wait(&cond);
+		ret = pi_cond_wait(&cond, &mutex);
 		CHECK_RETURN_VAL_OR_FAIL(ret, "pi_cond_wait");
 	}
 	pthread_cleanup_pop(1);

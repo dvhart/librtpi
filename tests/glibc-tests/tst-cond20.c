@@ -27,8 +27,8 @@
 #define N 10
 #define ROUNDS 1000
 static DEFINE_PI_MUTEX(mut, 0);
-static DEFINE_PI_COND(cond, &mut, 0);
-static DEFINE_PI_COND(cond2, &mut, 0);
+static DEFINE_PI_COND(cond, 0);
+static DEFINE_PI_COND(cond2, 0);
 static pthread_barrier_t b;
 static int count;
 
@@ -41,7 +41,7 @@ static void *tf(void *p)
 		pi_mutex_lock(&mut);
 
 		if (++count == N)
-			pi_cond_signal(&cond2);
+			pi_cond_signal(&cond2, &mut);
 
 #ifdef TIMED
 		struct timespec ts;
@@ -52,9 +52,9 @@ static void *tf(void *p)
 			exit(1);
 		}
 		ts.tv_sec += 3;
-		pi_cond_timedwait(&cond, &ts);
+		pi_cond_timedwait(&cond, &mut, &ts);
 #else
-		pi_cond_wait(&cond);
+		pi_cond_wait(&cond, &mut);
 #endif
 
 		pi_mutex_unlock(&mut);
@@ -96,18 +96,18 @@ static int do_test(void)
 	for (i = 0; i < ROUNDS; ++i) {
 		/* Make sure we discard spurious wake-ups.  */
 		do
-			pi_cond_wait(&cond2);
+			pi_cond_wait(&cond2, &mut);
 		while (count != N);
 
 		if (i & 2)
-			pi_cond_broadcast(&cond);
+			pi_cond_broadcast(&cond, &mut);
 		else if (i & 4)
 			for (j = 0; j < N; ++j)
-				pi_cond_signal(&cond);
+				pi_cond_signal(&cond, &mut);
 		else {
 			for (j = 0; j < (i / 8) % N; ++j)
-				pi_cond_signal(&cond);
-			pi_cond_broadcast(&cond);
+				pi_cond_signal(&cond, &mut);
+			pi_cond_broadcast(&cond, &mut);
 		}
 
 		pi_mutex_unlock(&mut);
@@ -138,7 +138,7 @@ static int do_test(void)
 		}
 
 		count = 0;
-		err = pi_cond_init(&cond, &mut, 0);
+		err = pi_cond_init(&cond, 0);
 		if (err) {
 			printf("pi_cond_init failed: %s\n", strerror(err));
 			return 1;

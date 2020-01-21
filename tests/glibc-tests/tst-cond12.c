@@ -67,7 +67,7 @@ static int do_test(void)
 		return 1;
 	}
 
-	if (pi_cond_init(&p->c, &p->m, RTPI_COND_PSHARED) != 0) {
+	if (pi_cond_init(&p->c, RTPI_COND_PSHARED) != 0) {
 		puts("mutex_init failed");
 		return 1;
 	}
@@ -107,13 +107,13 @@ static int do_test(void)
 		p->var = 0;
 
 #ifndef USE_COND_SIGNAL
-		if (pi_cond_broadcast(&p->c) != 0) {
+		if (pi_cond_broadcast(&p->c, &p->m) != 0) {
 			puts("child: cond_broadcast failed");
 			kill(getppid(), SIGKILL);
 			exit(1);
 		}
 #else
-		if (pi_cond_signal(&p->c) != 0) {
+		if (pi_cond_signal(&p->c, &p->m) != 0) {
 			puts("child: cond_signal failed");
 			kill(getppid(), SIGKILL);
 			exit(1);
@@ -130,7 +130,7 @@ static int do_test(void)
 	}
 
 	do
-		pi_cond_wait(&p->c);
+		pi_cond_wait(&p->c, &p->m);
 	while (p->var != 0);
 
 	if (TEMP_FAILURE_RETRY(waitpid(pid, NULL, 0)) != pid) {

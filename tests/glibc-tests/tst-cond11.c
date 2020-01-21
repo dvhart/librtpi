@@ -47,7 +47,7 @@ static int run_test(clockid_t cl)
 		return 1;
 	}
 
-	if (pi_cond_init(&cond, &mut, flags) != 0) {
+	if (pi_cond_init(&cond, flags) != 0) {
 		puts("cond_init failed");
 		return 1;
 	}
@@ -71,7 +71,7 @@ static int run_test(clockid_t cl)
 	/* Wait one second.  */
 	++ts.tv_sec;
 
-	int e = pi_cond_timedwait(&cond, &ts);
+	int e = pi_cond_timedwait(&cond, &mut, &ts);
 	if (e == 0) {
 		puts("cond_timedwait succeeded");
 		return 1;
