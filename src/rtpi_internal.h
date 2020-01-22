@@ -25,7 +25,6 @@ union pi_mutex {
 union pi_cond {
 	struct {
 		union pi_mutex	priv_mut;
-		union pi_mutex	*mutex;
 		__u32		cond;
 		__u32		flags;
 		__u32		wake_id;
@@ -35,9 +34,8 @@ union pi_cond {
 	__u8 pad[128];
 } __attribute__ ((aligned(64)));
 
-#define PI_COND_INIT(m, f) \
+#define PI_COND_INIT(f) \
 	{ .priv_mut = PI_MUTEX_INIT(f) \
-	, .mutex = m \
 	, .cond = 0 \
 	, .flags = f \
 	, .wake_id = 0 \

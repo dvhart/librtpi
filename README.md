@@ -59,13 +59,13 @@ mutexattr with the PTHREAD_PRIO_INHERIT protocal set.
 New primitive modeled after the POSIX pthread_cond_t, with the following
 modifications.
 
-1. It must be associated with a pi_mutex_t at initialization time,
-preventing the practice of signaling the condition prior to the
-association of the mutex.
-2. All wakeup events will wake the N highest priority waiters.
-3. Waiters will be woken in priority FIFO order.
-4. The associated mutex must be held when the condition variable is signaled or
+1. All wakeup events will wake the N highest priority waiters.
+2. Waiters will be woken in priority FIFO order.
+3. The associated mutex must be held when the condition variable is signaled or
 broadcast.
+4. The associated mutex must be passed as a parameter to the signal and
+broadcast calls. The mutex is used to requeue woken waiters and avoid the
+"thundering herd" effect.
 
 ## Functions
 ### PI Mutex
@@ -113,20 +113,20 @@ Simple wrapper to pthread_mutex_unlock.
 The PI Condition API represents a new implementation of a Non-POSIX PI aware
 condition variable.
 
-#### int pi_cond_init(pi_cond_t \*cond, pi_mutex_t \*mutex, uint32_t flags)
+#### int pi_cond_init(pi_cond_t \*cond, uint32_t flags)
 
 ##### Where flags are:
 * RTPI_COND_PSHARED
 
 #### int pi_cond_destroy(pi_cond_t \*cond)
 
-#### int pi_cond_wait(pi_cond_t \*cond)
+#### int pi_cond_wait(pi_cond_t \*cond, pi_mutex_t \*mutex)
 
-#### int pi_cond_timedwait(pi_cond_t \*cond, const struct timespec \*restrict abstime)
+#### int pi_cond_timedwait(pi_cond_t \*cond, pi_mutex_t \*mutex, const struct timespec \*restrict abstime)
 
-#### int pi_cond_signal(pi_cond_t \*cond)
+#### int pi_cond_signal(pi_cond_t \*cond, pi_mutex_t \*mutex)
 
-#### int pi_cond_broadcast(pi_cond_t \*cond)
+#### int pi_cond_broadcast(pi_cond_t \*cond, pi_mutex_t \*mutex)
 
 ## Initializers
 
@@ -134,10 +134,9 @@ condition variable.
 
 Defines and initializes a PI aware mutex.
 
-#### DEFINE_PI_COND(condvar, mutex, flags)
+#### DEFINE_PI_COND(condvar, flags)
 
-Defines and initializes a PI aware conditional variable. The mutex is
-associated with the conditional variable at this time.
+Defines and initializes a PI aware conditional variable.
 
 # C++ Specification
 WRITEME - after the C Specification is complete

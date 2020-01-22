@@ -24,7 +24,7 @@ void pi_cond_free(pi_cond_t *cond)
 	free(cond);
 }
 
-int pi_cond_init(pi_cond_t *cond, pi_mutex_t *mutex, uint32_t flags)
+int pi_cond_init(pi_cond_t *cond, uint32_t flags)
 {
 	struct timespec ts = { 0, 0 };
 	int ret;
@@ -38,13 +38,7 @@ int pi_cond_init(pi_cond_t *cond, pi_mutex_t *mutex, uint32_t flags)
 		cond->flags = RTPI_COND_PSHARED;
 	}
 
-	/* PSHARED has to match on both. */
-	if ((cond->flags & RTPI_COND_PSHARED) ^ (mutex->flags % RTPI_MUTEX_PSHARED)) {
-		ret = EINVAL;
-		goto out;
-	}
 	pi_mutex_init(&cond->priv_mut, cond->flags & RTPI_COND_PSHARED);
-	cond->mutex = mutex;
 
 	ret = 0;
 out:
@@ -57,7 +51,8 @@ int pi_cond_destroy(pi_cond_t *cond)
 	return 0;
 }
 
-int pi_cond_timedwait(pi_cond_t *cond, const struct timespec *restrict abstime)
+int pi_cond_timedwait(pi_cond_t *cond, pi_mutex_t *mutex,
+		      const struct timespec *restrict abstime)
 {
 	int ret;
 	__u32 wait_id;
@@ -67,7 +62,7 @@ int pi_cond_timedwait(pi_cond_t *cond, const struct timespec *restrict abstime)
 	if (ret)
 		return ret;
 
-	ret = pi_mutex_unlock(cond->mutex);
+	ret = pi_mutex_unlock(mutex);
 	if (ret) {
 		pi_mutex_unlock(&cond->priv_mut);
 		return ret;
@@ -80,7 +75,7 @@ int pi_cond_timedwait(pi_cond_t *cond, const struct timespec *restrict abstime)
 		futex_id = cond->cond;
 		pi_mutex_unlock(&cond->priv_mut);
 
-		ret = futex_wait_requeue_pi(cond, futex_id, abstime, cond->mutex);
+		ret = futex_wait_requeue_pi(cond, futex_id, abstime, mutex);
 		if (ret < 0) {
 			if (errno == EAGAIN) {
 				/* futex VAL changed between unlock & wait */
@@ -90,7 +85,7 @@ int pi_cond_timedwait(pi_cond_t *cond, const struct timespec *restrict abstime)
 					cond->pending_wake--;
 					cond->pending_wait--;
 					pi_mutex_unlock(&cond->priv_mut);
-					pi_mutex_lock(cond->mutex);
+					pi_mutex_lock(mutex);
 					ret = 0;
 					break;
 				}
@@ -110,7 +105,7 @@ int pi_cond_timedwait(pi_cond_t *cond, const struct timespec *restrict abstime)
 			cond->pending_wait--;
 			cond->pending_wake--;
 			pi_mutex_unlock(&cond->priv_mut);
-			pi_mutex_lock(cond->mutex);
+			pi_mutex_lock(mutex);
 			ret = 0;
 			break;
 		}
@@ -119,12 +114,12 @@ int pi_cond_timedwait(pi_cond_t *cond, const struct timespec *restrict abstime)
 	return ret;
 }
 
-int pi_cond_wait(pi_cond_t *cond)
+int pi_cond_wait(pi_cond_t *cond, pi_mutex_t *mutex)
 {
-	return pi_cond_timedwait(cond, NULL);
+	return pi_cond_timedwait(cond, mutex, NULL);
 }
 
-int pi_cond_signal(pi_cond_t *cond)
+int pi_cond_signal(pi_cond_t *cond, pi_mutex_t *mutex)
 {
 	int ret;
 	__u32 id;
@@ -143,7 +138,7 @@ int pi_cond_signal(pi_cond_t *cond)
 	pi_mutex_unlock(&cond->priv_mut);
 
 	do {
-		ret = futex_cmp_requeue_pi(cond, id, 0, cond->mutex);
+		ret = futex_cmp_requeue_pi(cond, id, 0, mutex);
 		if (ret > 0) {
 			/* Wakeup performed */
 			break;
@@ -166,7 +161,7 @@ int pi_cond_signal(pi_cond_t *cond)
 	return 0;
 }
 
-int pi_cond_broadcast(pi_cond_t *cond)
+int pi_cond_broadcast(pi_cond_t *cond, pi_mutex_t *mutex)
 {
 	int ret;
 	__u32 id;
@@ -185,7 +180,7 @@ int pi_cond_broadcast(pi_cond_t *cond)
 	pi_mutex_unlock(&cond->priv_mut);
 
 	do {
-		ret = futex_cmp_requeue_pi(cond, id, INT_MAX, cond->mutex);
+		ret = futex_cmp_requeue_pi(cond, id, INT_MAX, mutex);
 		if (ret >= 0) {
 			/* Wakeup performed */
 			break;
