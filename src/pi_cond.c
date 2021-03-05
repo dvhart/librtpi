@@ -96,6 +96,7 @@ int pi_cond_timedwait(pi_cond_t *cond, pi_mutex_t *mutex,
 				pi_mutex_lock(&cond->priv_mut);
 				cond->pending_wait--;
 				pi_mutex_unlock(&cond->priv_mut);
+				pi_mutex_lock(mutex);
 				ret = errno;
 				break;
 			}
