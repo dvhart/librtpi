@@ -4,8 +4,8 @@
 AM_CPPFLAGS = -I. -I$(top_srcdir)/src
 LDADD = $(top_builddir)/src/librtpi.la -lpthread
 
-check_PROGRAMS = tst-cond1 tst-cond2 tst-cond3 tst-cond5 tst-cond9
+check_PROGRAMS = tst-cond1 tst-cond2 tst-cond3 tst-cond5 tst-cond9 tst-cond16
 
-TESTS = tst-cond1 tst-cond2 tst-cond3 tst-cond5 tst-cond9
+TESTS = tst-cond1 tst-cond2 tst-cond3 tst-cond5 tst-cond9 tst-cond16
 
 test: check
