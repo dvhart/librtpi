@@ -5,5 +5,7 @@ AM_CPPFLAGS = -I. -I$(top_srcdir)/src
 LDADD = $(top_builddir)/src/librtpi.la -lpthread
 SUBDIRS = glibc-tests
 
-check_PROGRAMS = test_api tst-cond1 tst-condpi2
-TESTS = test_api tst-cond1 tst-condpi2.sh
+check_PROGRAMS = test_api tst-cond1 tst-condpi2 tst-condpi2-cpp
+TESTS = test_api tst-cond1 tst-condpi2.sh tst-condpi2-cpp.sh
+
+tst_condpi2_cpp_SOURCES = tst-condpi2-cpp.cpp
