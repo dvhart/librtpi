@@ -12,6 +12,10 @@
 
 #include "rtpi_internal.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef union pi_mutex pi_mutex_t;
 typedef union pi_cond pi_cond_t;
 
@@ -64,5 +68,9 @@ int pi_cond_timedwait(pi_cond_t *cond, pi_mutex_t *mutex,
 int pi_cond_signal(pi_cond_t *cond, pi_mutex_t *mutex);
 
 int pi_cond_broadcast(pi_cond_t *cond, pi_mutex_t *mutex);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif // RTPI_H
