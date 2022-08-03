@@ -12,6 +12,7 @@ AC_CONFIG_FILES([
  src/Makefile
  tests/Makefile
  tests/glibc-tests/Makefile
+ tests/libstdc++-tests/Makefile
 ])
 AC_CONFIG_MACRO_DIRS([m4])
 AX_CXX_COMPILE_STDCXX_11

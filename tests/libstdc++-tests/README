@@ -1,0 +1,6 @@
+The test code in this directory is originally derived from libstdc++'s
+test suite and is licensed under the GPLv3.
+
+See the upstream gcc.git for more details:
+
+https://gcc.gnu.org/git/gcc.git
