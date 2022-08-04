@@ -139,7 +139,25 @@ Defines and initializes a PI aware mutex.
 Defines and initializes a PI aware conditional variable.
 
 # C++ Specification
-WRITEME - after the C Specification is complete
+
+## Source files
+* rtpi/mutex.hpp
+* rtpi/condition_variable.hpp
+
+## Types
+### rtpi::mutex
+
+Wrapper around the rtpi `pi_mutex_t` that is intended to work as a
+replacement for [std::mutex](https://en.cppreference.com/w/cpp/thread/mutex).
+
+### rtpi::condition_variable
+
+Wrapper around the rtpi `pi_cond_t` that is intended to work mostly as a
+drop-in replacement for [std::condition_variable](https://en.cppreference.com/w/cpp/thread/condition_variable).
+
+Notable differences from `std::condition_variable`:
+* `std::unique_lock<rtpi::mutex>` is used for the wait methods instead of `std::unique_lock<std::mutex>`
+* `notify_one` and `notify_all` require a `std::unique_lock<rtpi::mutex>` parameter
 
 # References
 1. POSIX pthread API?
